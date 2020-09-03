@@ -28,7 +28,6 @@ def makeListOfDict_membersData(dict_clanData, dict_currentRiverRace):
 	river race data and convert it to a list. This list contains consolidated
 	members data in a dictionary object. This list is returned.'''
 	list_combinedMembersData = []
-	
 	for dict_member in dict_clanData['items']:
 		dict_member_new = dict_member
 		for dict_participant in dict_currentRiverRace['clan']['participants']:
@@ -39,10 +38,10 @@ def makeListOfDict_membersData(dict_clanData, dict_currentRiverRace):
 	return list_combinedMembersData
 
 def formatDict_combinedMembersData(list_combinedMembersData):
-	'''This block of code takes in dictionary of consolidated members data
+	'''This block of code takes in list of dictionary of consolidated members data
 	and allows formatting of key names and value. The formatted dictionary
-	is then returned. Noted that this can be further broken down into more
-	functions.'''
+	is then reappended into a new list. This list is returned. Noted that this can
+	be further broken down into more functions.'''
 	new_list = []
 	for dict_member in list_combinedMembersData:
 		dict_member['arena'] = dict_member['arena']['name']
@@ -60,32 +59,39 @@ def formatDict_combinedMembersData(list_combinedMembersData):
 def makeListOfDict_currentRiverRace(dict_currentRiverRace):
 	'''This block of code takes in raw dictionary of river race data
 	and convert it to a list. This list is returned.'''
-	listOfDict = dict_currentRiverRace['clans']
-	return listOfDict
+	dict_currentRiverRace = dict_currentRiverRace['clans']
+	return dict_currentRiverRace
 
-def sortListOfDict(Dict, key_sort_by):
+def sortListOfDict(listOfDict, keyToSortBy):
 	'''This block of code sorts a dictionary by key specified. It 
 	has yet to be completed.'''
-	pass
+	list_containsKeyToSortBy = [i for i in listOfDict if keyToSortBy in i.keys()]
+	list_nonKeyToSortBy = [i for i in listOfDict if keyToSortBy not in i.keys()]
+	new_list = sorted(list_containsKeyToSortBy, key=lambda i: i.get(keyToSortBy), reverse=True)
+	new_list.extend(list_nonKeyToSortBy)
+	return new_list
 
 def formatString_listOfDict(listOfDict, keys_to_call):
 	'''This block of code takes in a list of dictionaries object and
 	a list of string objects which are keys to be called to become
 	the headers of the table. The list is converted into a formatted
 	string that resembles a table. This string is returned.'''
-	dict_sizes = {}
-	response = ''
-	freeSpace = 3
+	
+	dict_sizes = {} # dictionary to store no. of spaces allocated for each key for string formatting
+	response = '' # initialise an empty string to store all the strings
+	freeSpace = 3 # this is the additional spaces allocated for each key for string formatting
 
+	# This loop is to set up the header and append spaces allocated for each key into dict_sizes
 	for key in keys_to_call:
 		max_value_size = max([len(str(e[key])) for e in listOfDict if key in e.keys()])
-		if max_value_size < len(key):
+		if max_value_size < len(key): # if size of largest value in dictionary is shorter than key then use key instead
 			max_value_size = len(key)
 		dict_sizes[key] = max_value_size + freeSpace
 		response += '{v:<{size}}'.format(v=key.title(), size=dict_sizes[key])
 
 	response += '\n{v:-<{size}}\n'.format(v='', size=sum(dict_sizes.values()))
 	
+	# This loop is to set up the main body of the table, i.e. the members data
 	for e in listOfDict:
 		string_temp = ''
 		for key in keys_to_call:
@@ -97,29 +103,88 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 		response += '{}\n'.format(string_temp)
 	return response
 
-def main():
-	# Settings for table
-	keys_to_call_CMD = ['lastSeen', 'donations', 'trophies', 'arena', 'fame', 'repairPoints', 'lvl', 'rank', 'name']
-	keys_to_call_CRC = ['name', 'fame', 'repairPoints']
-	
-	while True: # Loop which allows refresh everytime enter is pressed (unless exited)
+def clanLeaderboard(keys_to_call):
+	e = ''
+	while True:
 		# Retrieve Data
 		clanData = retrieve_clanData()
 		currentRiverRace = retrieve_currentRiverRace()
-		
+
 		# Get Clan Leaderboard
 		list_combinedMembersData = makeListOfDict_membersData(clanData, currentRiverRace)
-		list_formattedCMD = formatDict_combinedMembersData(list_combinedMembersData)
-		print('Available Keys:\n{}\n'.format('\n'.join(list(list_formattedCMD[0].keys()))))
-		print('Members: {}/50\n'.format(len(list_formattedCMD)))
-		print(formatString_listOfDict(list_combinedMembersData, keys_to_call_CMD))
+		formatDict_combinedMembersData(list_combinedMembersData)
 		
+		# Check for sort
+		if e == '1':
+			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'trophies')
+		elif e == '2':
+			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'donations')
+		elif e == '3':
+			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'fame')
+		elif e == '4':
+			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'lvl')
+
+		# Print block
+		print('Available Keys:\n{}\n'.format('\n'.join(list(list_combinedMembersData[0].keys()))))
+		print('Members: {}/50\n'.format(len(list_combinedMembersData)))
+		print(formatString_listOfDict(list_combinedMembersData, keys_to_call))
+
+		e = input("Enter to refresh. 'e' to return to menu. Otherwise: \n"
+			"1. Sort by Trophies\n"
+			"2. Sort by Donations\n"
+			"3. Sort by Fame\n"
+			"4. Sort by Level\n"
+			"Your Choice: ")
+		if e.lower() == 'e':
+			break
+
+def riverRaceLeaderboard(keys_to_call):
+	e = ''
+	while True:
+		#Retrieve Data
+		currentRiverRace = retrieve_currentRiverRace()
+
+		# Check for sort
+		if e == '1':
+			list_currentRiverRace = sortListOfDict(list_currentRiverRace, 'name')
+		elif e == '2':
+			list_currentRiverRace = sortListOfDict(list_currentRiverRace, 'fame')
+		elif e == '3':
+			list_currentRiverRace = sortListOfDict(list_currentRiverRace, 'clanScore')
+
 		# Get River Race Leaderboard
 		list_currentRiverRace = makeListOfDict_currentRiverRace(currentRiverRace)
 		print('Available Keys:\n{}\n'.format('\n'.join(list(list_currentRiverRace[0].keys()))))
-		print(formatString_listOfDict(list_currentRiverRace, keys_to_call_CRC))
-		
-		e = input("Enter to refresh. 'N' to exit program: ")
-		if e.lower() == 'n':
+		print(formatString_listOfDict(list_currentRiverRace, keys_to_call))
+
+		e = input("Enter to refresh. 'e' to return to menu. Otherwise: \n"
+			"1. Sort by Name\n"
+			"2. Sort by Fame\n"
+			"3. Sort by War Trophies\n"
+			"Your Choice: ")
+		if e.lower() == 'e':
 			break
+
+def main():
+	# Settings for table
+	keys_to_call_CMD = ['lastSeen', 'donations', 'trophies', 'arena', 'fame', 'repairPoints', 'lvl', 'rank', 'name']
+	keys_to_call_CRC = ['fame', 'repairPoints', 'clanScore', 'name']
+	
+	while True:
+		option = input('1. Clan Leaderboard\n'
+			'2. River Race Leaderboard\n'
+			'3. Print API member raw dictionary\n'
+			'4. Print API river race raw dictionary\n'
+			'Your Choice: '
+			)
+		if option == '3':
+			print(retrieve_clanData())
+		elif option == '4':
+			print(retrieve_currentRiverRace())
+		elif option == '1':
+			clanLeaderboard(keys_to_call_CMD)
+		elif option == '2':
+			riverRaceLeaderboard(keys_to_call_CRC)
+		else:
+			print('Invalid. Try again.')
 main()
