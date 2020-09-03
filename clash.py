@@ -41,10 +41,16 @@ def makeListOfDict_membersData(dict_clanData, dict_currentRiverRace):
 def formatDict_combinedMembersData(list_combinedMembersData):
 	'''This block of code takes in dictionary of consolidated members data
 	and allows formatting of key names and value. The formatted dictionary
-	is then returned.'''
+	is then returned. Noted that this can be further broken down into more
+	functions.'''
 	new_list = []
 	for dict_member in list_combinedMembersData:
 		dict_member['arena'] = dict_member['arena']['name']
+		dict_member['lvl'] = dict_member['expLevel']
+		dict_member.pop('expLevel')
+		dict_member['role'] = dict_member['role'].title()
+		dict_member['rank'] = dict_member['role']
+		dict_member.pop('role')
 		dateTime_lastSeen = dateutil.parser.isoparse(dict_member['lastSeen'])
 		dateTime_lastSeen = dateTime_lastSeen.astimezone(pytz.timezone('Asia/Singapore'))
 		dict_member['lastSeen'] = dateTime_lastSeen.strftime("%H:%M %d/%m")
@@ -93,7 +99,7 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 
 def main():
 	# Settings for table
-	keys_to_call_CMD = ['lastSeen', 'donations', 'trophies', 'arena', 'fame', 'repairPoints', 'expLevel', 'role', 'name']
+	keys_to_call_CMD = ['lastSeen', 'donations', 'trophies', 'arena', 'fame', 'repairPoints', 'lvl', 'rank', 'name']
 	keys_to_call_CRC = ['name', 'fame', 'repairPoints']
 	
 	while True: # Loop which allows refresh everytime enter is pressed (unless exited)
