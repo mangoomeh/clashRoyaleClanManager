@@ -83,8 +83,10 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 	dict_sizes = {} # dictionary to store no. of spaces allocated for each key for string formatting
 	response = '' # initialise an empty string to store all the strings
 	freeSpace = 3 # this is the additional spaces allocated for each key for string formatting
+	i = 0
 
 	# This loop is to set up the header and append spaces allocated for each key into dict_sizes
+	response += '\ns/n '
 	for key in keys_to_call:
 		max_value_size = max([len(str(e[key])) for e in listOfDict if key in e.keys()])
 		if max_value_size < len(key): # if size of largest value in dictionary is shorter than key then use key instead
@@ -92,10 +94,11 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 		dict_sizes[key] = max_value_size + freeSpace
 		response += '{v:<{size}}'.format(v=key.title(), size=dict_sizes[key])
 
-	response += '\n{v:-<{size}}\n'.format(v='', size=sum(dict_sizes.values()))
+	response += '\n{v:-<{size}}\n'.format(v='', size=sum(dict_sizes.values())+3)
 	
 	# This loop is to set up the main body of the table, i.e. the members data
 	for e in listOfDict:
+		i += 1
 		string_temp = ''
 		for key in keys_to_call:
 			if key in e.keys():
@@ -103,7 +106,7 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 			else:
 				string_temp += '{:<{size}}'.format('n.a.', size=dict_sizes[key])
 					
-		response += '{}\n'.format(string_temp)
+		response += '{:4}{}\n'.format(str(i) + '.', string_temp)
 	return response
 
 def clanLeaderboard(keys_to_call):
@@ -116,7 +119,6 @@ def clanLeaderboard(keys_to_call):
 		# Get Clan Leaderboard
 		list_combinedMembersData = makeListOfDict_membersData(clanData, currentRiverRace)
 		formatDict_combinedMembersData(list_combinedMembersData)
-		print(list_combinedMembersData)
 		# Check for sort
 		if e == '1':
 			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'trophies')
@@ -130,7 +132,7 @@ def clanLeaderboard(keys_to_call):
 			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'fame+rp')
 
 		# Print block
-		print('Members: {}/50\n'.format(len(list_combinedMembersData)))
+		print('\nMembers: {}/50'.format(len(list_combinedMembersData)))
 		print(formatString_listOfDict(list_combinedMembersData, keys_to_call))
 
 		e = input("Enter to refresh. 'e' to return to menu. Otherwise: \n"
@@ -195,6 +197,8 @@ def main():
 			print(retrieve_clanData())
 		elif option == '4':
 			print(retrieve_currentRiverRace())
+		elif option == '5':
+			checkAvailableKeys()
 		elif option == '1':
 			clanLeaderboard(keys_to_call_CMD)
 		elif option == '2':
