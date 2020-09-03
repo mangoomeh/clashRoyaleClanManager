@@ -10,6 +10,7 @@ base_url = "https://proxy.royaleapi.dev/v1"
 endp1 = f"/clans/%23{clanTag}/members"
 endp2 = f"/clans/%23{clanTag}/currentriverrace"
 header = {"Authorization": "Bearer %s" %key}
+e = ''
 
 def retrieve_clanData():
 	'''This block of code retrieves clan members data and return it as
@@ -42,8 +43,8 @@ def formatDict_combinedMembersData(list_combinedMembersData):
 	and allows formatting of key names and value. The formatted dictionary
 	is then reappended into a new list. This list is returned.'''
 	new_list = []
-	list_keysToReplace = ['expLevel', 'role', 'repairPoints']
-	list_newKeys = ['lvl', 'rank', 'rp']
+	list_keysToReplace = ['expLevel', 'role', 'repairPoints', 'trophies', 'donations']
+	list_newKeys = ['lvl', 'rank', 'rp', 'trophy', 'donate']
 	for dict_member in list_combinedMembersData:
 		if 'fame' in dict_member.keys():
 			dict_member['fame+rp'] = dict_member['fame'] + dict_member['repairPoints']
@@ -106,11 +107,12 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 			else:
 				string_temp += '{:<{size}}'.format('n.a.', size=dict_sizes[key])
 					
-		response += '{:4}{}\n'.format(str(i) + '.', string_temp)
+		response += '{:>3} {}\n'.format(str(i), string_temp)
 	return response
 
 def clanLeaderboard(keys_to_call):
 	e = ''
+	stored_e = ''
 	while True:
 		# Retrieve Data
 		clanData = retrieve_clanData()
@@ -120,15 +122,18 @@ def clanLeaderboard(keys_to_call):
 		list_combinedMembersData = makeListOfDict_membersData(clanData, currentRiverRace)
 		formatDict_combinedMembersData(list_combinedMembersData)
 		# Check for sort
-		if e == '1':
+		if e in [str(i) for i in range(1,6)]:
+			stored_e = e
+
+		if stored_e == '1':
 			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'trophies')
-		elif e == '2':
+		elif stored_e == '2':
 			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'donations')
-		elif e == '3':
+		elif stored_e == '3':
 			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'fame')
-		elif e == '4':
+		elif stored_e == '4':
 			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'lvl')
-		elif e == '5':
+		elif stored_e == '5':
 			list_combinedMembersData = sortListOfDict(list_combinedMembersData, 'fame+rp')
 
 		# Print block
@@ -147,22 +152,25 @@ def clanLeaderboard(keys_to_call):
 
 def riverRaceLeaderboard(keys_to_call):
 	e = ''
+	stored_e = ''
 	while True:
 		#Retrieve Data
 		currentRiverRace = retrieve_currentRiverRace()
 		list_currentRiverRace = makeListOfDict_currentRiverRace(currentRiverRace)
 
 		# Check for sort
-		if e == '1':
+		if e in [str(i) for i in range(1,4)]:
+			stored_e = e
+
+		if stored_e == '1':
 			list_currentRiverRace = sortListOfDict(list_currentRiverRace, 'name')
-		elif e == '2':
+		elif stored_e == '2':
 			list_currentRiverRace = sortListOfDict(list_currentRiverRace, 'fame')
-		elif e == '3':
+		elif stored_e == '3':
 			list_currentRiverRace = sortListOfDict(list_currentRiverRace, 'clanScore')
 
 		# Get River Race Leaderboard
 		print(formatString_listOfDict(list_currentRiverRace, keys_to_call))
-
 		e = input("Enter to refresh. 'e' to return to menu. Otherwise: \n"
 			"1. Sort by Name\n"
 			"2. Sort by Fame\n"
@@ -170,6 +178,8 @@ def riverRaceLeaderboard(keys_to_call):
 			"Your Choice: ")
 		if e.lower() == 'e':
 			break
+
+
 
 def checkAvailableKeys():
 	clanData = retrieve_clanData()
@@ -185,7 +195,7 @@ def checkAvailableKeys():
 
 def main():
 	# Settings for table
-	keys_to_call_CMD = ['lastSeen', 'donations', 'trophies', 'arena', 'fame', 'rp', 'fame+rp', 'lvl', 'rank', 'name']
+	keys_to_call_CMD = ['lastSeen', 'donate', 'trophy', 'arena', 'fame', 'rp', 'fame+rp', 'lvl', 'rank', 'name']
 	keys_to_call_CRC = ['fame', 'repairPoints', 'clanScore', 'name']
 	
 	while True:
@@ -205,5 +215,4 @@ def main():
 			riverRaceLeaderboard(keys_to_call_CRC)
 		else:
 			print('Invalid. Try again.')
-# checkAvailableKeys()
 main()
