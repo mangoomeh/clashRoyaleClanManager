@@ -13,16 +13,63 @@ endp1 = f"/clans/%23{clanTag}/members"
 endp2 = f"/clans/%23{clanTag}/currentriverrace"
 header = {"Authorization": "Bearer %s" %key}
 
-# Review Rubric
-arenaGrade = {('Arena 7', 'Arena 8'):1,
-				('Arena 9', 'Arena 10'):2,
-				('Arena 11', 'Arena 12'):3,
-				('Legendary Arena', 'Challenger II'):4,
-				('Challenger III', 'Master I'):5,
-				('Master II', 'Master III'):6,
-				('Ultimate Champion', 'Royal Champion', 'Grand Champion', 'Champion'):7}
-donateGrade = {900:7, 600:6, 400:5, 250:4, 120:3, 50:2, 10:1}
-rrGrade = {3000:7, 2400:6, 1800:5, 1200:4, 800:3, 400:2, 100:1}
+# Review Rubric CWG
+def cwgReview(listOfDict):
+	# KEY(S) ADDED: 'ag', 'dg', 'rrg', 'ovg'
+	arenaGrade = {('Arena 7', 'Arena 8'):1,
+					('Arena 9', 'Arena 10'):2,
+					('Arena 11', 'Arena 12'):3,
+					('Legendary Arena', 'Challenger II'):4,
+					('Challenger III', 'Master I'):5,
+					('Master II', 'Master III'):6,
+					('Ultimate Champion', 'Royal Champion', 'Grand Champion', 'Champion'):7}
+	donateGrade = {900:7, 600:6, 400:5, 250:4, 120:3, 50:2, 10:1}
+	rrGrade = {3000:7, 2400:6, 1800:5, 1200:4, 800:3, 400:2, 100:1}
+	list_new = []
+	for dict_member in listOfDict:
+		for k, v in arenaGrade.items():
+			if dict_member['arena'] in k:
+				dict_member['ag'] = v
+				break
+			else:
+				dict_member['ag'] = 0
+		for k, v in donateGrade.items():
+			if dict_member['donate'] >= k:
+				dict_member['dg'] = v
+				break
+			else:
+				dict_member['dg'] = 0
+		for k, v in rrGrade.items():
+			if dict_member.get('fame+rp') == None:
+				dict_member['rrg'] = 0
+				break
+			elif dict_member['fame+rp'] >= k:
+				dict_member['rrg'] = v
+				break
+			else:
+				dict_member['rrg'] = 0
+		dict_member['ovg'] = math.floor((dict_member['ag'] + dict_member['dg'] + dict_member['rrg'])/3)
+		list_new.append(dict_member)
+	return list_new
+
+
+# Review Rubric RBG
+def rbgReview(listOfDict):
+	# KEY(S) ADDED: 'rbrv'
+	m = [30, 500] # donate, fame+rp
+	e = [300, 2500]
+	c = [900, 5000]
+	rubric = {'c':c, 'e':e, 'm':m}
+	list_new = []
+	for dict_member in listOfDict:
+		for k, v in rubric.items():
+			if (dict_member.get('donate') >= v[0]) and (dict_member.get('fame+rp') >= v[1]):
+				dict_member['rbrv'] = k
+				break
+			else:
+				dict_member['rbrv'] = 'kick'
+		list_new.append(dict_member)
+	return list_new	
 
 def retrieve_clanData():
 	'''This block of code retrieves clan members data and return it as
@@ -43,6 +90,9 @@ def makeListOfDict_membersData(dict_clanData, dict_currentRiverRace):
 	river race data and convert it to a list. This list contains consolidated
 	members data in a dictionary object. This list is returned.'''
 	
+	'''KEY(S) ADDED: tag, name, rank, lastSeen, arena, trophy, donate,
+					received, lvl, fame, rp, fame+rp'''
+
 	list_membersData = []
 	for dict_member in dict_clanData['items']:
 		dict_member_new = {}
@@ -64,28 +114,6 @@ def makeListOfDict_membersData(dict_clanData, dict_currentRiverRace):
 				dict_member_new['rp'] 		= dict_participant.get('repairPoints')
 				dict_member_new['fame+rp'] 	= dict_participant.get('fame') + dict_participant.get('repairPoints')
 				break
-		for k, v in arenaGrade.items():
-			if dict_member_new['arena'] in k:
-				dict_member_new['ag'] = v
-				break
-			else:
-				dict_member_new['ag'] = 0
-		for k, v in donateGrade.items():
-			if dict_member_new['donate'] >= k:
-				dict_member_new['dg'] = v
-				break
-			else:
-				dict_member_new['dg'] = 0
-		for k, v in rrGrade.items():
-			if dict_member_new.get('fame+rp') == None:
-				dict_member_new['rrg'] = 0
-				break
-			elif dict_member_new['fame+rp'] >= k:
-				dict_member_new['rrg'] = v
-				break
-			else:
-				dict_member_new['rrg'] = 0
-		dict_member_new['ovg'] = math.floor((dict_member_new['ag'] + dict_member_new['dg'] + dict_member_new['rrg'])/3)
 		list_membersData.append(dict_member_new)
 	return list_membersData
 
@@ -163,7 +191,8 @@ def clanLeaderboard(keys_to_call):
 		clanData = retrieve_clanData()
 		currentRiverRace = retrieve_currentRiverRace()
 		list_membersData = makeListOfDict_membersData(clanData, currentRiverRace)
-		
+		list_membersData = cwgReview(rbgReview(list_membersData))
+
 		# Check for sort
 		if e in [str(i) for i in range(1,len(list_sortCriteria)+1)]:
 			stored_e = e
@@ -225,7 +254,7 @@ def main():
 	# Settings for table ---------------------------------------------------------------------------------------
 	keysToCall_mD = ['lastSeen', 'trophy', 'rank',
 						'lvl', 'donate', 'arena', 'fame',
-						'rp', 'fame+rp', 'dg', 'ag', 'rrg', 'ovg', 'name']
+						'rp', 'fame+rp', 'dg', 'ag', 'rrg', 'ovg', 'rbrv', 'name']
 	keysToCall_rR = ['fame', 'rp', 'trophy', 'tag', 'name']
 	# ----------------------------------------------------------------------------------------------------------
 
@@ -259,11 +288,5 @@ def fameCalculator():
 
 		print(f'If lose all battles: {totalLvl*e}')
 		print(f'If win all battles: {totalLvl*2*e}')
-
-def donateCalculator():
-	while True:
-		totalDonates = 0
-		print('\nThis is a donation calculator.')
-
 
 main()
