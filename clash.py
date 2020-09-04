@@ -170,6 +170,7 @@ def clanLeaderboard(keys_to_call):
 		for i in range(len(list_sortCriteria)):
 			if stored_e == str(i+1):
 				list_membersData = sortListOfDict(list_membersData, list_sortCriteria[i])
+				print('Sort Completed.\n')
 				break
 
 		# Print block
@@ -242,6 +243,27 @@ def main():
 			clanLeaderboard(keysToCall_mD)
 		elif option == '2':
 			riverRaceLeaderboard(keysToCall_rR)
+		elif option == '6':
+			fameCalculator()
 		else:
 			print('Invalid. Try again.')
+
+def fameCalculator():
+	while True:
+		totalLvl = 0
+		print('\nThis is a fame calculator.')
+		for i in range(8):
+			e = int(input(f"Enter {i+1}'s card level: "))
+			totalLvl += e
+		e = int(input('Number of games: '))
+
+		print(f'If lose all battles: {totalLvl*e}')
+		print(f'If win all battles: {totalLvl*2*e}')
+
+def donateCalculator():
+	while True:
+		totalDonates = 0
+		print('\nThis is a donation calculator.')
+
+
 main()
