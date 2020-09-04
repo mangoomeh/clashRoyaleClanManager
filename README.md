@@ -16,7 +16,7 @@ Coleader: 	900 donates | 5000 fame
 
 ### Managerial
 
-Membership: 	0 donates | 0 fame | recruitment | decided by comittee
+Membership: recruitment | decided by comittee
 
 Elder: 		300 donates | 2500 fame | recruitment | jr. management
 
