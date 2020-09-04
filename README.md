@@ -1,9 +1,11 @@
 # Clan Management
 
 
+
+
 ## Spontane Clan Grading
 
-################# Performance ##################
+### Performance 
 
 Membership: 	30 donates | 500 fame
 
@@ -12,8 +14,7 @@ Elder: 		300 donates | 2500 fame
 Coleader: 	900 donates | 5000 fame
 
 
-
-################# Management ##################
+### Managerial
 
 Membership: 	0 donates | 0 fame | recruitment | decided by comittee
 
