@@ -13,16 +13,85 @@ endp1 = f"/clans/%23{clanTag}/members"
 endp2 = f"/clans/%23{clanTag}/currentriverrace"
 header = {"Authorization": "Bearer %s" %key}
 
-# Review Rubric
-arenaGrade = {('Arena 7', 'Arena 8'):1,
-				('Arena 9', 'Arena 10'):2,
-				('Arena 11', 'Arena 12'):3,
-				('Legendary Arena', 'Challenger II'):4,
-				('Challenger III', 'Master I'):5,
-				('Master II', 'Master III'):6,
-				('Ultimate Champion', 'Royal Champion', 'Grand Champion', 'Champion'):7}
-donateGrade = {900:7, 600:6, 400:5, 250:4, 120:3, 50:2, 10:1}
-rrGrade = {3000:7, 2400:6, 1800:5, 1200:4, 800:3, 400:2, 100:1}
+# Review Rubric CWG
+def cwgReview(listOfDict):
+	# KEY(S) ADDED: 'ag', 'dg', 'rrg', 'ovg'
+	arenaGrade = {('Arena 7', 'Arena 8'):1,
+					('Arena 9', 'Arena 10'):2,
+					('Arena 11', 'Arena 12'):3,
+					('Legendary Arena', 'Challenger II'):4,
+					('Challenger III', 'Master I'):5,
+					('Master II', 'Master III'):6,
+					('Ultimate Champion', 'Royal Champion', 'Grand Champion', 'Champion'):7}
+	donateGrade = {900:7, 600:6, 400:5, 250:4, 120:3, 50:2, 10:1}
+	rrGrade = {3000:7, 2400:6, 1800:5, 1200:4, 800:3, 400:2, 100:1}
+	list_new = []
+	for dict_member in listOfDict:
+		for k, v in arenaGrade.items():
+			if dict_member['arena'] in k:
+				dict_member['ag'] = v
+				break
+			else:
+				dict_member['ag'] = 0
+		for k, v in donateGrade.items():
+			if dict_member['donate'] >= k:
+				dict_member['dg'] = v
+				break
+			else:
+				dict_member['dg'] = 0
+		for k, v in rrGrade.items():
+			if dict_member.get('fame+rp') == None:
+				dict_member['rrg'] = 0
+				break
+			elif dict_member['fame+rp'] >= k:
+				dict_member['rrg'] = v
+				break
+			else:
+				dict_member['rrg'] = 0
+		dict_member['ovg'] = math.floor((dict_member['ag'] + dict_member['dg'] + dict_member['rrg'])/3)
+		list_new.append(dict_member)
+	return list_new
+
+
+# Review Rubric RBG
+def rbgReview(listOfDict):
+	# KEY(S) ADDED: 'rbrv'
+	m = [30, 500] # donate, fame+rp
+	e = [300, 2500]
+	c = [900, 5000]
+	rubric = {'c':c, 'e':e, 'm':m}
+	list_new = []
+	for dict_member in listOfDict:
+		for k, v in rubric.items():
+			if (dict_member.get('donate') >= v[0]) and (dict_member.get('fame+rp') >= v[1]):
+				if dict_member['rank'] == 'Member':
+					if k == 'm':
+						dict_member['rbrv'] = 'retain'
+					elif k =='e':
+						dict_member['rbrv'] = 'promote e'
+					elif k == 'c':
+						dict_member['rbrv'] = 'promote co'
+				elif dict_member['rank'] == 'Elder':
+					if k == 'm':
+						dict_member['rbrv'] = 'demote m'
+					elif k =='e':
+						dict_member['rbrv'] = 'retain'
+					elif k == 'c':
+						dict_member['rbrv'] = 'promote co'
+				elif dict_member['rank'] == 'Coleader':
+					if k == 'm':
+						dict_member['rbrv'] = 'demote m'
+					elif k =='e':
+						dict_member['rbrv'] = 'demote e'
+					elif k == 'c':
+						dict_member['rbrv'] = 'retain'
+				else:
+					dict_member['rbrv'] = k
+				break
+			else:
+				dict_member['rbrv'] = 'kick'
+		list_new.append(dict_member)
+	return list_new	
 
 def retrieve_clanData():
 	'''This block of code retrieves clan members data and return it as
@@ -43,13 +112,16 @@ def makeListOfDict_membersData(dict_clanData, dict_currentRiverRace):
 	river race data and convert it to a list. This list contains consolidated
 	members data in a dictionary object. This list is returned.'''
 	
+	'''KEY(S) ADDED: tag, name, rank, lastSeen, arena, trophy, donate,
+					received, lvl, fame, rp, fame+rp'''
+
 	list_membersData = []
 	for dict_member in dict_clanData['items']:
 		dict_member_new = {}
 					   # New                     # Old
 		dict_member_new['tag'] 		= dict_member['tag']
 		dict_member_new['name'] 	= dict_member['name']
-		dict_member_new['rank'] 	= dict_member['role']
+		dict_member_new['rank'] 	= dict_member['role'].title()
 		dict_member_new['lastSeen'] = dp.isoparse(dict_member['lastSeen']).astimezone(pytz.timezone('Asia/Singapore')).strftime("%H:%M %d/%m")
 		dict_member_new['arena'] 	= dict_member['arena']['name']
 		dict_member_new['trophy'] 	= dict_member['trophies']
@@ -64,28 +136,6 @@ def makeListOfDict_membersData(dict_clanData, dict_currentRiverRace):
 				dict_member_new['rp'] 		= dict_participant.get('repairPoints')
 				dict_member_new['fame+rp'] 	= dict_participant.get('fame') + dict_participant.get('repairPoints')
 				break
-		for k, v in arenaGrade.items():
-			if dict_member_new['arena'] in k:
-				dict_member_new['ag'] = v
-				break
-			else:
-				dict_member_new['ag'] = 0
-		for k, v in donateGrade.items():
-			if dict_member_new['donate'] >= k:
-				dict_member_new['dg'] = v
-				break
-			else:
-				dict_member_new['dg'] = 0
-		for k, v in rrGrade.items():
-			if dict_member_new.get('fame+rp') == None:
-				dict_member_new['rrg'] = 0
-				break
-			elif dict_member_new['fame+rp'] >= k:
-				dict_member_new['rrg'] = v
-				break
-			else:
-				dict_member_new['rrg'] = 0
-		dict_member_new['ovg'] = math.floor((dict_member_new['ag'] + dict_member_new['dg'] + dict_member_new['rrg'])/3)
 		list_membersData.append(dict_member_new)
 	return list_membersData
 
@@ -93,6 +143,7 @@ def makeListOfDict_riverRace(dict_riverRace):
 	'''This block of code takes in raw dictionary of river race data
 	and convert it to a list. This list is returned.'''
 	
+	'''KEY(S) ADDED: tag, name, fame, rp, trophy'''
 	list_riverRace = []
 	for dict_clan in dict_riverRace['clans']:
 		dict_clan_new = {}
@@ -108,10 +159,10 @@ def makeListOfDict_riverRace(dict_riverRace):
 def sortListOfDict(listOfDict, keyToSortBy):
 	'''This block of code sorts a dictionary by key specified.'''
 	
-	list_containsKeyToSortBy = [i for i in listOfDict if keyToSortBy in i.keys()]
-	list_nonKeyToSortBy = [i for i in listOfDict if keyToSortBy not in i.keys()]
-	list_sorted = sorted(list_containsKeyToSortBy, key=lambda i: i.get(keyToSortBy), reverse=True)
-	list_sorted.extend(list_nonKeyToSortBy)
+	list_hasKey = [i for i in listOfDict if keyToSortBy in i.keys()] # dicts that contains the key
+	list_nonKey = [i for i in listOfDict if keyToSortBy not in i.keys()] # dicts that does not contain the key
+	list_sorted = sorted(list_hasKey, key=lambda i: i.get(keyToSortBy), reverse=True) # sort list that contains key
+	list_sorted.extend(list_nonKey) # add back dict that does not contain the key at the end
 	return list_sorted
 
 def formatString_listOfDict(listOfDict, keys_to_call):
@@ -121,12 +172,12 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 	string that resembles a table. This string is returned.'''
 	
 	dict_sizes = {} # dictionary to store no. of spaces allocated for each key for string formatting
-	response = '{:>3} '.format('S/N')
+	response = '{:>3} '.format('S/N') # initialize string and add first header
 	freeSpace = 3 # this is the additional spaces allocated for each key for string formatting
 	i = 0
 	# This loop is to set up the header and append spaces allocated for each key into dict_sizes
 	for key in keys_to_call:
-		max_value_size = max([len(str(e[key])) for e in listOfDict if key in e.keys()])
+		max_value_size = max([len(str(e[key])) for e in listOfDict if key in e.keys()]) # get size of largest value
 		if max_value_size < len(key): # if size of largest value in dictionary is shorter than key then use key instead
 			max_value_size = len(key)
 		dict_sizes[key] = max_value_size + freeSpace
@@ -148,22 +199,40 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 	return response
 
 def clanLeaderboard(keys_to_call):
+	# Initialize variables
 	e = ''
 	stored_e = ''
-	string_sortMsg = ''
-	i = 1
-	
+
+	# Sort settings =========================================================
 	list_sortCriteria = ['trophy', 'donate', 'fame', 'lvl', 'fame+rp', 'ovg']
+	# =======================================================================
+
+	# This block check if sort criterion is in keys to call and recreate itself
+	list_temp = []
+	for i in range(len(list_sortCriteria)):
+		if list_sortCriteria[i] in keys_to_call:
+			list_temp.append(list_sortCriteria[i])
+	list_sortCriteria = list_temp
+
+	# This block generates sort message
+	string_sortMsg = ''
+	for i in range(len(list_sortCriteria)):
+		string_sortMsg += '{}. Sort by {}\n'.format(i+1, list_sortCriteria[i].title())
 	
-	for criteria in list_sortCriteria:
-		string_sortMsg += '{}. Sort by {}\n'.format(i, criteria.title())
-		i += 1
+	# This block is the interface
 	while True:
 		# Retrieve Data
 		clanData = retrieve_clanData()
 		currentRiverRace = retrieve_currentRiverRace()
+		
+		'''KEY(S) ADDED: 	tag, name, rank, lastSeen, arena, trophy, donate,
+							received, lvl, fame, rp, fame+rp'''
 		list_membersData = makeListOfDict_membersData(clanData, currentRiverRace)
 		
+		# KEY(S) ADDED: 'ag', 'dg', 'rrg', 'ovg', 'rbrv'
+		list_membersData = cwgReview(list_membersData)
+		list_membersData = rbgReview(list_membersData)
+
 		# Check for sort
 		if e in [str(i) for i in range(1,len(list_sortCriteria)+1)]:
 			stored_e = e
@@ -181,22 +250,35 @@ def clanLeaderboard(keys_to_call):
 			break
 
 def riverRaceLeaderboard(keys_to_call):
+	# Initialize variables
 	e = ''
 	stored_e = ''
-	string_sortMsg = ''
-	i = 1
 	
+	# Sort Settings =================================
 	list_sortCriteria = ['name', 'fame', 'rp']
-	
-	for criteria in list_sortCriteria:
-		string_sortMsg += '{}. Sort by {}\n'.format(i, criteria.title())
-		i += 1
+	# ===============================================
+
+	# This block check if sort criterion is in keys to call and recreate itself
+	list_temp = []
+	for i in range(len(list_sortCriteria)):
+		if list_sortCriteria[i] in keys_to_call:
+			list_temp.append(list_sortCriteria[i])
+	list_sortCriteria = list_temp
+
+	# This block generates sort message
+	string_sortMsg = ''
+	for i in range(len(list_sortCriteria)):
+		string_sortMsg += '{}. Sort by {}\n'.format(i+1, list_sortCriteria[i].title())
+
+	# This block is the interface
 	while True:
 		#Retrieve Data
 		dict_riverRace = retrieve_currentRiverRace()
+		
+		'''KEY(S) ADDED: 	fame, rp, trophy, tag, name'''
 		list_riverRace = makeListOfDict_riverRace(dict_riverRace)
 
-		# Check for sort
+		# This block checks if sort is needed and sort if needed
 		if e in [str(i) for i in range(1,len(list_sortCriteria)+1)]:
 			stored_e = e
 		for i in range(len(list_sortCriteria)):
@@ -207,27 +289,39 @@ def riverRaceLeaderboard(keys_to_call):
 		# Print block
 		print(formatString_listOfDict(list_riverRace, keys_to_call))
 		e = input("<Enter> to refresh. 'e' to return to menu. Otherwise:\n{}Your Choice: ".format(string_sortMsg))
+		
+		# Check if user wants to return to menu
 		if e.lower() == 'e':
 			break
 
 def checkAvailableKeys():
 	clanData = retrieve_clanData()
 	riverRace = retrieve_currentRiverRace()
-
 	list_membersData = makeListOfDict_membersData(clanData, riverRace)
-
 	list_riverRace = makeListOfDict_riverRace(riverRace)
-
 	print('Available keys for clan data:\n{}\n'.format('\n'.join(list(list_membersData[0].keys()))))
 	print('Available keys for riverrace data:\n{}\n'.format('\n'.join(list(list_riverRace[0].keys()))))
 
+def fameCalculator():
+	totalLvl = 0
+	print('\nThis is a fame calculator.')
+	for i in range(8):
+		e = int(input(f"Enter {i+1}'s card level: "))
+		totalLvl += e
+	e = int(input('Number of games: '))
+	print(f'If lose all battles: {totalLvl*e}')
+	print(f'If win all battles: {totalLvl*2*e}')
+
 def main():
-	# Settings for table ---------------------------------------------------------------------------------------
-	keysToCall_mD = ['lastSeen', 'trophy', 'rank',
-						'lvl', 'donate', 'arena', 'fame',
-						'rp', 'fame+rp', 'dg', 'ag', 'rrg', 'ovg', 'name']
+	# Settings for table ==============================================================
+	'''Available keys: 	| tag | name | rank | lastSeen | arena | trophy | donate | received |
+						|lvl | fame | rp | fame+rp |'''
+	keysToCall_mD = ['lastSeen', 'lvl', 'trophy', 'donate', 'received', 'arena', 'fame+rp', 'rank']
+	keysToCall_mD.extend(['ag', 'dg', 'rrg', 'ovg']) # CWG REVIEW 
+	keysToCall_mD.extend(['rbrv']) # RB REVIEW
+	keysToCall_mD.extend(['name'])
 	keysToCall_rR = ['fame', 'rp', 'trophy', 'tag', 'name']
-	# ----------------------------------------------------------------------------------------------------------
+	# =================================================================================
 
 	while True:
 		option = input('1. Clan Leaderboard\n'
@@ -247,23 +341,5 @@ def main():
 			fameCalculator()
 		else:
 			print('Invalid. Try again.')
-
-def fameCalculator():
-	while True:
-		totalLvl = 0
-		print('\nThis is a fame calculator.')
-		for i in range(8):
-			e = int(input(f"Enter {i+1}'s card level: "))
-			totalLvl += e
-		e = int(input('Number of games: '))
-
-		print(f'If lose all battles: {totalLvl*e}')
-		print(f'If win all battles: {totalLvl*2*e}')
-
-def donateCalculator():
-	while True:
-		totalDonates = 0
-		print('\nThis is a donation calculator.')
-
 
 main()
