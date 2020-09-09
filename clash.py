@@ -23,10 +23,10 @@ def retrieve_currentRiverRace():
 	'''This block of code retrieves river race data and return it as
 	a dictionary.'''
 	endp = f"/clans/%23{clanTag}/currentriverrace"
-	dict_currentRiverRace = requests.get(base_url+endp, headers=header).json()
-	return dict_currentRiverRace
+	dict_riverRaceData = requests.get(base_url+endp, headers=header).json()
+	return dict_riverRaceData
 
-def makeListOfdict_mD(dict_clanData, dict_currentRiverRace):
+def makeListOfdict_cLB(dict_clanData, dict_riverRaceData):
 	'''This block of code takes in raw dictionary of clan members and
 	river race data and convert it to a list. This list contains consolidated
 	members data in a dictionary object. This list is returned.'''
@@ -48,7 +48,7 @@ def makeListOfdict_mD(dict_clanData, dict_currentRiverRace):
 		dict_m_new['received'] 	= dict_m['donationsReceived']
 		dict_m_new['lvl'] 		= dict_m['expLevel']
 		
-		for dict_participant in dict_currentRiverRace['clan']['participants']:
+		for dict_participant in dict_riverRaceData['clan']['participants']:
 			if dict_m['tag'] == dict_participant['tag']:
 							   # New 							# Old
 				dict_m_new['fame'] 		= dict_participant.get('fame')
@@ -58,13 +58,13 @@ def makeListOfdict_mD(dict_clanData, dict_currentRiverRace):
 		list_membersData.append(dict_m_new)
 	return list_membersData
 
-def makeListOfDict_riverRace(dict_riverRace):
+def makeListOfdict_rRLB(dict_riverRaceData):
 	'''This block of code takes in raw dictionary of river race data
 	and convert it to a list. This list is returned.'''
 	
 	'''KEY(S) ADDED TO RIVERRACE DATA: tag, name, fame, rp, trophy'''
 	list_riverRace = []
-	for dict_clan in dict_riverRace['clans']:
+	for dict_clan in dict_riverRaceData['clans']:
 		dict_clan_new = {}
 					 # New 				   # Old
 		dict_clan_new['tag'] 	= dict_clan['tag']
@@ -74,6 +74,23 @@ def makeListOfDict_riverRace(dict_riverRace):
 		dict_clan_new['trophy'] = dict_clan['clanScore']
 		list_riverRace.append(dict_clan_new)
 	return list_riverRace
+
+def makeListOfdict_rRCLB(dict_riverRaceData):
+	'''This block of code takes in raw dictionary of river race data
+	and convert it to a list of dictionaries containing only info about
+	clans and their war participants. This list is returned.'''
+
+	'''KEYS(S) ADDED TO RIVERRACE INDIVIDUAL'S DATA:'''
+	list_individualClanMembers = []
+	for dict_clan in dict_riverRaceData['clans']:
+		for dict_i in dict_clan['participants']:
+			dict_i_new = {}
+			dict_i_new['clan'] = dict_clan['name']
+			dict_i_new['name'] = dict_i['name']
+			dict_i_new['fame+rp'] = dict_i['fame'] + dict_i['repairPoints']
+			list_individualClanMembers.append(dict_i_new)
+	return list_individualClanMembers
+
 
 def sortListOfDict(listOfDict, keyToSortBy):
 	'''This block of code sorts a dictionary by key specified to sort by.'''
@@ -228,12 +245,12 @@ def clanLeaderboard(keys_to_call):
 	# This block is the interface
 	while True:
 		# Retrieve Data
-		clanData = retrieve_clanData()
-		currentRiverRace = retrieve_currentRiverRace()
+		dict_clanData = retrieve_clanData()
+		dict_riverRaceData = retrieve_currentRiverRace()
 		
 		'''KEY(S) ADDED: 	tag, name, rank, lastSeen, arena, trophy, donate,
 							received, lvl, fame, rp, fame+rp'''
-		list_membersData = makeListOfdict_mD(clanData, currentRiverRace)
+		list_membersData = makeListOfdict_cLB(dict_clanData, dict_riverRaceData)
 		
 		# KEY(S) ADDED: 'ag', 'dg', 'rrg', 'ovg', 'rbrv', 'review'
 		cwgReview(list_membersData)
@@ -280,10 +297,10 @@ def riverRaceLeaderboard(keys_to_call):
 	# This block is the interface
 	while True:
 		#Retrieve Data
-		dict_riverRace = retrieve_currentRiverRace()
+		dict_riverRaceData = retrieve_currentRiverRace()
 		
 		'''KEY(S) ADDED: 	fame, rp, trophy, tag, name'''
-		list_riverRace = makeListOfDict_riverRace(dict_riverRace)
+		list_riverRace = makeListOfdict_rRLB(dict_riverRaceData)
 
 		# This block checks if sort is needed and sort if needed
 		if e in [str(i) for i in range(1,len(list_sortCriteria)+1)]:
@@ -301,11 +318,56 @@ def riverRaceLeaderboard(keys_to_call):
 		if e.lower() == 'e':
 			break
 
+def individualClanMembersLeaderboard(keys_to_call):
+	# Initialize variables
+	e = ''
+	stored_e = ''
+	
+	# Sort Settings =================================
+	list_sortCriteria = ['name', 'fame+rp', 'clan']
+	# ===============================================
+
+	# This block check if sort criterion is in keys to call and recreate itself
+	list_temp = []
+	for i in range(len(list_sortCriteria)):
+		if list_sortCriteria[i] in keys_to_call:
+			list_temp.append(list_sortCriteria[i])
+	list_sortCriteria = list_temp
+
+	# This block generates sort message
+	string_sortMsg = ''
+	for i in range(len(list_sortCriteria)):
+		string_sortMsg += '{}. Sort by {}\n'.format(i+1, list_sortCriteria[i].title())
+
+	# This block is the interface
+	while True:
+		#Retrieve Data
+		dict_riverRaceData = retrieve_currentRiverRace()
+		
+		'''KEY(S) ADDED: 	fame, rp, trophy, tag, name'''
+		list_individualClanMembers = makeListOfdict_rRCLB(dict_riverRaceData)
+
+		# This block checks if sort is needed and sort if needed
+		if e in [str(i) for i in range(1,len(list_sortCriteria)+1)]:
+			stored_e = e
+		for i in range(len(list_sortCriteria)):
+			if stored_e == str(i+1):
+				list_individualClanMembers = sortListOfDict(list_individualClanMembers, list_sortCriteria[i])
+				break
+
+		# Print block
+		print(formatString_listOfDict(list_individualClanMembers, keys_to_call))
+		e = input("<Enter> to refresh. 'e' to return to menu. Otherwise:\n{}Your Choice: ".format(string_sortMsg))
+		
+		# Check if user wants to return to menu
+		if e.lower() == 'e':
+			break
+
 def checkAvailableKeys():
 	clanData = retrieve_clanData()
 	riverRace = retrieve_currentRiverRace()
-	list_membersData = makeListOfdict_mD(clanData, riverRace)
-	list_riverRace = makeListOfDict_riverRace(riverRace)
+	list_membersData = makeListOfdict_cLB(clanData, riverRace)
+	list_riverRace = makeListOfdict_rRLB(riverRace)
 	keys_mD = []
 	keys_rR = []
 	for member in list_membersData:
@@ -346,6 +408,7 @@ def main():
 	#keysToCall_mD.extend(['review']) # 30 donates only review
 	keysToCall_mD.extend(['name'])
 	keysToCall_rR = ['fame', 'rp', 'trophy', 'tag', 'name']
+	keysToCall_rRI = ['clan', 'fame+rp', 'name']
 	# =================================================================================
 
 	# Menu Interface
@@ -357,6 +420,7 @@ def main():
 			'4. Print raw river race data dictionary\n'
 			'5. Check available keys\n'
 			'6. Fame calculator\n'
+			'7. Clans Individual Members Fame\n'
 			'0. Exit\n'
 			'Your Choice: '
 			)
@@ -372,6 +436,10 @@ def main():
 			checkAvailableKeys()
 		elif option == '6':
 			fameCalculator()
+		elif option == '7':
+			individualClanMembersLeaderboard(keysToCall_rRI)
+		elif option == '0':
+			break
 		
 		else:
 			print('Invalid. Try again.')
