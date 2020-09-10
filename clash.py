@@ -41,7 +41,7 @@ def makeListOfdict_cLB(dict_clanData, dict_riverRaceData):
 		dict_m_new['tag']		= dict_m['tag']
 		dict_m_new['name'] 		= dict_m['name']
 		dict_m_new['rank'] 		= dict_m['role'].title()
-		dict_m_new['lastSeen'] 	= dp.isoparse(dict_m['lastSeen']).astimezone(pytz.timezone('Asia/Singapore')).strftime("%H:%M %d/%m")
+		dict_m_new['lastSeen'] 	= dp.isoparse(dict_m['lastSeen']).astimezone(pytz.timezone('Asia/Singapore')).strftime("%d/%m %H:%M")
 		dict_m_new['arena'] 	= dict_m['arena']['name']
 		dict_m_new['trophy'] 	= dict_m['trophies']
 		dict_m_new['donate'] 	= dict_m['donations']
@@ -227,7 +227,7 @@ def clanLeaderboard(keys_to_call):
 	stored_e = ''
 
 	# Sort settings =========================================================
-	list_sortCriteria = ['trophy', 'donate', 'fame', 'lvl', 'fame+rp', 'ovg']
+	list_sortCriteria = ['trophy', 'donate', 'fame', 'lvl', 'fame+rp', 'ovg', 'lastSeen']
 	# =======================================================================
 
 	# This block check if sort criterion is in keys to call and recreate itself
