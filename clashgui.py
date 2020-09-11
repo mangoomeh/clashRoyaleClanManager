@@ -61,54 +61,22 @@ def makeListOfdict_cLB(dict_clanData, dict_riverRaceData):
 		list_membersData.append(dict_m_new)
 	return list_membersData
 
-def formatString_listOfDict(top, listOfDict, keys_to_call):
-	'''This block of code takes in a list of dictionaries object and
-	a list of string objects which are keys to be called to become
-	the headers of the table. The list is converted into a formatted
-	string that resembles a table. This string is returned.'''
-	
-	dict_sizes = {} # dictionary to store no. of spaces allocated for each key for string formatting
-	response = '\n{:>3}| '.format('S/N') # initialize string and add first header
-	freeSpace = 3 # this is the additional spaces allocated for each key for string formatting
-	# This loop is to set up the header and append spaces allocated for each key into dict_sizes
-	for key in keys_to_call:
-		max_value_size = max([len(str(e[key])) for e in listOfDict if key in e.keys()]) # get size of largest value
-		if max_value_size < len(key): # if size of largest value in dictionary is shorter than key then use key instead
-			max_value_size = len(key)
-		dict_sizes[key] = max_value_size + freeSpace
-		response += '{v:<{size}}'.format(v=key.title(), size=dict_sizes[key])
-
-	Label(top, text=response).pack(anchor=W)
-	Label(top, text='\n{:-<{size}}\n'.format('', size=len(response))).pack(anchor=W)
-	
-	# This loop is to set up the main body of the table, i.e. the members data
-	for i in range(len(listOfDict)):
-		string_temp = ''
-		for key in keys_to_call:
-			if key in listOfDict[i].keys():
-				string_temp += '{v:<{size}}'.format(v=listOfDict[i][key], size=dict_sizes[key])
-			else:
-				string_temp += '{:<{size}}'.format('n.a.', size=dict_sizes[key])		
-		Label(top, text='{:>3}| {}\n'.format(str(i+1), string_temp)).pack(anchor=W)
 
 def clanLeaderBoard():
 	top = Toplevel()
-	keysToCall_mD = ['lastSeen', 
-					 'lvl',
-					 'trophy',
-					 'donate', 
-					 'received', 
-					 'arena', 
-					 'fame+rp', 
-					 'rank']
+	vsb = Scrollbar(top, command=top.yview).grid(row=0, column=20)
+	top.configure(yscrollcommand=vsb.set)
 	list_membersData = makeListOfdict_cLB(retrieve_clanData(), retrieve_currentRiverRace())
-	response = formatString_listOfDict(top, list_membersData, keysToCall_mD)
+	for i in range(len(list_membersData)):
+		for j in range(len(list(list_membersData[i].keys()))):
+			Label(top, text=list_membersData[i]['{}'.format(list(list_membersData[i].keys())[j])]).grid(row=i, column=j, ipadx=10)
+
 root = Tk()
 root.title('Clan Manager v1')
 
-Button(root, text='Clan Leaderboard', command=clanLeaderBoard).pack()
-Button(root, text='Riverrace Leaderboard').pack()
-Button(root, text='Exit', command=root.quit).pack()
+Button(root, text='Clan Leaderboard', command=clanLeaderBoard).grid(row=0, column=0, padx=20, pady=(20,0), ipadx=12)
+Button(root, text='Riverrace Leaderboard').grid(row=1, column=0, padx=20)
+Button(root, text='Exit', command=root.quit).grid(row=2, column=0, padx=20, pady=(0,20))
 
 
 

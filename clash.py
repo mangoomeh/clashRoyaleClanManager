@@ -399,10 +399,11 @@ def main():
 	while True:
 		while True:
 			choice = input('\nClan Manager v1\n'
-							   '1. Spontane Main Clan\n'
-							   '2. Spontane Xp1\n'
-							   '0. Exit\n'
-							   'Your Choice: ')
+						   '--------------------\n'
+						   '1. Spontane Main Clan\n'
+						   '2. Spontane Xp1\n'
+						   '0. Exit\n'
+						   'Your Choice: ')
 			if choice == '1':
 				clanTag = 'L2208GR9'
 				break
@@ -422,7 +423,7 @@ def main():
 				'3. River Race Clans Leaderboard\n'
 				'4. Fame calculator\n'
 				'0. Return to Main Menu\n'
-				'\nMaintenance Purpose:\n'
+				'Maintenance Purpose:\n'
 				'5. Print raw clan data dictionary\n'
 				'6. Print raw river race data dictionary\n'
 				'7. Check available keys (w/o review)\n'
