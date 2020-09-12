@@ -402,14 +402,33 @@ def main():
 						   '--------------------\n'
 						   '1. Spontane Main Clan\n'
 						   '2. Spontane Xp1\n'
+						   '3. Manual Clantag\n'
 						   '0. Exit\n'
 						   'Your Choice: ')
 			if choice == '1':
 				clanTag = 'L2208GR9'
-				break
+				endp = f"/clans/%23{clanTag}/members"
+				reqcode = requests.get(base_url+endp, headers=header).status_code
+				if reqcode == 200:
+					break
+				else:
+					print(f'Error {reqcode}. Data cannot be retrieved.')
 			elif choice == '2':
 				clanTag = 'YPQ8CQ0R'
-				break
+				endp = f"/clans/%23{clanTag}/members"
+				reqcode = requests.get(base_url+endp, headers=header).status_code
+				if reqcode == 200:
+					break
+				else:
+					print(f'Error {reqcode}. Data cannot be retrieved.')
+			elif choice == '3':
+				clanTag = input('Input clan tag: ')[1:]
+				endp = f"/clans/%23{clanTag}/members"
+				reqcode = requests.get(base_url+endp, headers=header).status_code
+				if reqcode == 200:
+					break
+				else:
+					print(f'Error {reqcode}. Data cannot be retrieved.')
 			elif choice == '0':
 				exit()
 			else:
@@ -418,15 +437,15 @@ def main():
 		while True:
 			option = input(
 				'\nClash Royale Leaderboards/Tools:\n'
-				'1. Clan Leaderboard\n'
-				'2. River Race Leaderboard\n'
-				'3. River Race Clans Leaderboard\n'
-				'4. Fame calculator\n'
-				'0. Return to Main Menu\n'
+				'  1. Clan Leaderboard\n'
+				'  2. River Race Leaderboard\n'
+				'  3. River Race Clans Leaderboard\n'
+				'  4. Fame calculator\n'
+				'  0. Return to Main Menu\n'
 				'Maintenance Purpose:\n'
-				'5. Print raw clan data dictionary\n'
-				'6. Print raw river race data dictionary\n'
-				'7. Check available keys (w/o review)\n'
+				'  5. Print raw clan data dictionary\n'
+				'  6. Print raw river race data dictionary\n'
+				'  7. Check available keys (w/o review)\n'
 				'Your Choice: '
 				)
 			
