@@ -16,15 +16,19 @@ def retrieve_clanData():
 	'''This block of code retrieves clan members data and return it as
 	a dictionary.'''
 	endp = f"/clans/%23{clanTag}/members"
-	dict_clanData = requests.get(base_url+endp, headers=header).json()
-	return dict_clanData
+	json_clanData = requests.get(base_url+endp, headers=header)
+	dict_clanData = json_clanData.json()
+	reqcode = json_clanData.status_code
+	return dict_clanData, reqcode
 
 def retrieve_currentRiverRace():
 	'''This block of code retrieves river race data and return it as
 	a dictionary.'''
 	endp = f"/clans/%23{clanTag}/currentriverrace"
-	dict_riverRaceData = requests.get(base_url+endp, headers=header).json()
-	return dict_riverRaceData
+	json_riverRaceData = requests.get(base_url+endp, headers=header)
+	dict_riverRaceData = json_riverRaceData.json()
+	reqcode = json_riverRaceData.status_code
+	return dict_riverRaceData, reqcode
 
 def makeListOfdict_cLB(dict_clanData, dict_riverRaceData):
 	'''This block of code takes in raw dictionary of clan members and
@@ -187,7 +191,7 @@ def rbgReview(list_membersData):
 					break
 	return list_membersData
 
-def formatString_listOfDict(listOfDict, keys_to_call):
+def formatString_listOfDict(listOfDict, keysToCall):
 	'''This block of code takes in a list of dictionaries object and
 	a list of string objects which are keys to be called to become
 	the headers of the table. The list is converted into a formatted
@@ -197,7 +201,7 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 	response = '\n{:>3}| '.format('S/N') # initialize string and add first header
 	freeSpace = 3 # this is the additional spaces allocated for each key for string formatting
 	# This loop is to set up the header and append spaces allocated for each key into dict_sizes
-	for key in keys_to_call:
+	for key in keysToCall:
 		max_value_size = max([len(str(e[key])) for e in listOfDict if key in e.keys()]) # get size of largest value
 		if max_value_size < len(key): # if size of largest value in dictionary is shorter than key then use key instead
 			max_value_size = len(key)
@@ -209,7 +213,7 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 	# This loop is to set up the main body of the table, i.e. the members data
 	for i in range(len(listOfDict)):
 		string_temp = ''
-		for key in keys_to_call:
+		for key in keysToCall:
 			if key in listOfDict[i].keys():
 				string_temp += '{v:<{size}}'.format(v=listOfDict[i][key], size=dict_sizes[key])
 			else:
@@ -219,8 +223,8 @@ def formatString_listOfDict(listOfDict, keys_to_call):
 
 def getCLBdata():
 	# Retrieve Data
-	dict_clanData = retrieve_clanData()
-	dict_riverRaceData = retrieve_currentRiverRace()
+	dict_clanData = retrieve_clanData()[0]
+	dict_riverRaceData = retrieve_currentRiverRace()[0]
 	memberCount = len(dict_clanData['items'])
 	clanFame = dict_riverRaceData['clan'].get('fame')
 
@@ -232,18 +236,17 @@ def getCLBdata():
 	cwgReview(list_membersData)
 	rbgReview(list_membersData)
 	dReview(list_membersData)
-
 	return list_membersData, memberCount, clanFame
 
-def clanLeaderboard(keys_to_call):
+def clanLeaderboard(keysToCall):
 	# Initialize variables
 	e = ''
 	stored_e = ''
 
 	# This block generates sort message
 	string_sortMsg = ''
-	for i in range(len(keys_to_call)):
-		string_sortMsg += '{}. Sort by {}\n'.format(i+1, keys_to_call[i].title())
+	for i in range(len(keysToCall)):
+		string_sortMsg += '{}. Sort by {}\n'.format(i+1, keysToCall[i].title())
 	
 	# This block is the interface
 	while True:
@@ -251,76 +254,69 @@ def clanLeaderboard(keys_to_call):
 		list_membersData, memberCount, clanFame = getCLBdata()
 		
 		# Check for sort
-		if e in [str(i) for i in range(1,len(keys_to_call)+1)]:
+		if e in [str(i) for i in range(1,len(keysToCall)+1)]:
 			stored_e = e
-		for i in range(len(keys_to_call)):
+		for i in range(len(keysToCall)):
 			if stored_e == str(i+1):
-				list_membersData = sortListOfDict(list_membersData, keys_to_call[i])
+				list_membersData = sortListOfDict(list_membersData, keysToCall[i])
 				print('Sort Completed.\n')
 				break
 
 		# Print block
 		print('\nMembers: {}/50'.format(memberCount))
 		print('Fame: {}/50000'.format(clanFame))
-		print(formatString_listOfDict(list_membersData, keys_to_call))
+		print(formatString_listOfDict(list_membersData, keysToCall))
 		e = input(f"<Enter> to refresh. 'e' to return to menu. Otherwise:\n{string_sortMsg}Your Choice: ")
 		if e.lower() == 'e':
 			break
 
 def getRRLB():
 	'''KEY(S) ADDED: 	fame, rp, trophy, tag, name'''
-	list_riverRace = makeListOfdict_rRLB(retrieve_currentRiverRace())
-
+	list_riverRace = makeListOfdict_rRLB(retrieve_currentRiverRace()[0])
 	return list_riverRace
 
-def riverRaceLeaderboard(keys_to_call):
+def riverRaceLeaderboard(keysToCall):
 	# Initialize variables
 	e = ''
 	stored_e = ''
 
-	# Get data
-	list_riverRace = getRRLB()
-
 	# This block generates sort message
 	string_sortMsg = ''
-	for i in range(len(keys_to_call)):
-		string_sortMsg += '{}. Sort by {}\n'.format(i+1, keys_to_call[i].title())
+	for i in range(len(keysToCall)):
+		string_sortMsg += '{}. Sort by {}\n'.format(i+1, keysToCall[i].title())
 
 	# This block is the interface
 	while True:
-		#Retrieve Data
-		dict_riverRaceData = retrieve_currentRiverRace()
-		
-		'''KEY(S) ADDED: 	fame, rp, trophy, tag, name'''
-		list_riverRace = makeListOfdict_rRLB(dict_riverRaceData)
+		# Get Data
+		list_riverRace = getRRLB()
 
 		# This block checks if sort is needed and sort if needed
-		if e in [str(i) for i in range(1,len(keys_to_call)+1)]:
+		if e in [str(i) for i in range(1,len(keysToCall)+1)]:
 			stored_e = e
-		for i in range(len(keys_to_call)):
+		for i in range(len(keysToCall)):
 			if stored_e == str(i+1):
-				list_riverRace = sortListOfDict(list_riverRace, keys_to_call[i])
+				list_riverRace = sortListOfDict(list_riverRace, keysToCall[i])
 				break
 
 		# Print block
-		print(formatString_listOfDict(list_riverRace, keys_to_call))
+		print(formatString_listOfDict(list_riverRace, keysToCall))
 		e = input("<Enter> to refresh. 'e' to return to menu. Otherwise:\n{}Your Choice: ".format(string_sortMsg))
 		
 		# Check if user wants to return to menu
 		if e.lower() == 'e':
 			break
 
-def riverRaceClanMembers(keys_to_call):
+def riverRaceClanMembers(keysToCall):
 
 	# This block is the interface
 	while True:
 		#Retrieve Data
-		dict_riverRaceData = retrieve_currentRiverRace()
+		dict_riverRaceData = retrieve_currentRiverRace()[0]
 		listOfClans = makeListOfClans_rR(dict_riverRaceData)
 
 		for clan in listOfClans:
 			clan = sortListOfDict(clan, 'fame+rp')
-			print('\nClan: {}'.format(clan[0].get('clan')), formatString_listOfDict(clan, keys_to_call))
+			print('\nClan: {}'.format(clan[0].get('clan')), formatString_listOfDict(clan, keysToCall))
 
 		# Print block
 		e = input("<Enter> to refresh. 'e' to return to menu.")
@@ -358,6 +354,8 @@ def main():
 					 'donate', 
 					 #'received', 
 					 #'arena', 
+					 'fame', 
+					 'rp', 
 					 'fame+rp', 
 					 'rank']
 	#keysToCall_mD.extend(['ag', 'dg', 'rrg', 'ovg']) # CWG REVIEW 
@@ -386,24 +384,21 @@ def main():
 						   'Your Choice: ')
 			if choice == '1':
 				clanTag = 'L2208GR9'
-				endp = f"/clans/%23{clanTag}/members"
-				reqcode = requests.get(base_url+endp, headers=header).status_code
+				reqcode = retrieve_clanData()[1]
 				if reqcode == 200:
 					break
 				else:
 					print(f'Error {reqcode}. Data cannot be retrieved.')
 			elif choice == '2':
 				clanTag = 'YPQ8CQ0R'
-				endp = f"/clans/%23{clanTag}/members"
-				reqcode = requests.get(base_url+endp, headers=header).status_code
+				reqcode = retrieve_clanData()[1]
 				if reqcode == 200:
 					break
 				else:
 					print(f'Error {reqcode}. Data cannot be retrieved.')
 			elif choice == '3':
-				clanTag = input('Input clan tag: ')[1:]
-				endp = f"/clans/%23{clanTag}/members"
-				reqcode = requests.get(base_url+endp, headers=header).status_code
+				clanTag = input('Input clan tag: #')
+				reqcode = retrieve_clanData()[1]
 				if reqcode == 200:
 					break
 				else:
@@ -438,9 +433,9 @@ def main():
 			elif option == '4':
 				fameCalculator()
 			elif option == '5':
-				print(retrieve_clanData())
+				print(retrieve_clanData()[0])
 			elif option == '6':
-				print(retrieve_currentRiverRace())
+				print(retrieve_currentRiverRace()[0])
 			elif option == '7':
 				printAvailableKeys(getCLBdata()[0])
 			elif option == '8':
