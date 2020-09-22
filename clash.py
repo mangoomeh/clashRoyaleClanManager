@@ -30,6 +30,15 @@ def retrieve_currentRiverRace():
 	reqcode = json_riverRaceData.status_code
 	return dict_riverRaceData, reqcode
 
+def retrieve_playerLog(playerTag):
+	'''This block of code retrieves player battle log data and return it as
+	a dictionary.'''
+	endp = f"/players/%23{playerTag}/battlelog"
+	json_playerLogData = requests.get(base_url+endp, headers=header)
+	dict_playerLogData = json_playerLogData.json()
+	reqcode = json_playerLogData.status_code
+	return dict_playerLogData, reqcode
+
 def makeListOfdict_cLB(dict_clanData, dict_riverRaceData):
 	'''This block of code takes in raw dictionary of clan members and
 	river race data and convert it to a list. This list contains consolidated
@@ -99,6 +108,24 @@ def makeListOfClans_rR(dict_riverRaceData):
 		listOfClans.append(listOfMembers)
 	return listOfClans
 
+def makeListOfDict_battleLog(list_playerLog):
+	'''This block of code takes in raw dictionary of player log data
+	and convert it to a list. This list is returned.'''
+	
+	'''KEY(S) ADDED TO battleLog DATA: type, mode, clan, name'''
+	# Structure: [{},{},{}]
+	listOfGames = []
+	for game in list_playerLog:
+		dict_game_new = {}
+		dict_game_new['type'] = game.get('type')
+		dict_game_new['time'] = dp.isoparse(game.get('battleTime')).astimezone(pytz.timezone('Asia/Singapore')).strftime("%d/%m %H:%M")
+		dict_game_new['mode'] = game['gameMode'].get('name')
+		dict_game_new['score'] = str(game['team'][0].get('crowns')) + '-' + str(game['opponent'][0].get('crowns'))
+		if game['opponent'][0].get('clan') != None:
+			dict_game_new['clan'] = game['opponent'][0]['clan'].get('name')
+		dict_game_new['name'] = game['opponent'][0].get('name')
+		listOfGames.append(dict_game_new)
+	return listOfGames
 
 def sortListOfDict(listOfDict, keyToSortBy):
 	'''This block of code sorts a dictionary by key specified to sort by.'''
@@ -325,6 +352,37 @@ def riverRaceClanMembers(keysToCall):
 		if e.lower() == 'e':
 			break
 
+def playerLog(keysToCall):
+	# Initialize variables
+	e = ''
+	stored_e = ''
+	clan = makeListOfdict_cLB(retrieve_clanData()[0], retrieve_currentRiverRace()[0])
+	# This block generates sort message
+	string_sortMsg = ''
+	for i in range(len(keysToCall)):
+		string_sortMsg += '{}. Sort by {}\n'.format(i+1, keysToCall[i].title())
+
+	while True:
+		print(formatString_listOfDict(clan, ['tag', 'name',]))
+		try:
+			choice = int(input("<Enter> to return to menu. Else, enter player choice: "))
+		except ValueError:
+			print('Non-integer type values detected. Quitting.')
+			break
+		player = clan[choice-1]
+		playerTag = player['tag'][1:]
+		print('Accessing player log for {}...'.format(player['name']))
+		while True:
+			list_playerLog = retrieve_playerLog(playerTag)[0]
+			listOfGames = makeListOfDict_battleLog(list_playerLog)
+			# Print block
+			print(formatString_listOfDict(listOfGames, keysToCall))
+			e = input("<Enter> to refresh. 'e' to return to player choice. Otherwise:\n{}Your Choice: ".format(string_sortMsg))
+			
+			# Check if user wants to return to menu
+			if e.lower() == 'e':
+				break
+
 def printAvailableKeys(listOfDict):
 	list_keys = []
 	for member in listOfDict:
@@ -345,11 +403,13 @@ def fameCalculator():
 
 def main():
 	global clanTag
+	global playerTag
 	# Settings for table ==============================================================
 	'''Available keys: 	| tag | name | rank | lastSeen | arena | trophy | donate | received |
 						|lvl | fame | rp | fame+rp |'''
-	keysToCall_mD = ['lastSeen', 
+	keysToCall_mD = ['lastSeen',
 					 'lvl',
+					 'tag',
 					 'trophy',
 					 'donate', 
 					 #'received', 
@@ -370,6 +430,12 @@ def main():
 					 'name']
 	
 	keysToCall_rRI = ['fame+rp', 'name']
+	keysToCall_pL = 	['type',
+						'mode',
+						'time',
+						'score',
+						'name',
+						'clan',]
 	# =================================================================================
 
 	# Menu Interface
@@ -415,6 +481,7 @@ def main():
 				'  2. River Race Leaderboard\n'
 				'  3. River Race Clans Leaderboard\n'
 				'  4. Fame calculator\n'
+				'  9. Check Battle Log\n'
 				'  0. Return to Main Menu\n'
 				'Maintenance Purpose:\n'
 				'  5. Print raw clan data dictionary\n'
@@ -440,6 +507,8 @@ def main():
 				printAvailableKeys(getCLBdata()[0])
 			elif option == '8':
 				printAvailableKeys(getRRLB())
+			elif option == '9':
+				playerLog(keysToCall_pL)
 			elif option == '0':
 				break
 			
@@ -447,3 +516,4 @@ def main():
 				print('Invalid. Try again.')
 
 main()
+# print(json.dumps(retrieve_playerLog('8RLURC2LG')[0], indent=2))
