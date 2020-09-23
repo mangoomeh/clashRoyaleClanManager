@@ -4,6 +4,17 @@ import dateutil.parser as dp
 import datetime
 import pytz
 import math
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+import ast
+
+# def textToImg(string):
+# 	unicode_font = ImageFont.truetype("DejaVuSans.ttf", 10)
+# 	out = Image.new("RGB", (1000, 1500), (255, 255, 255))
+# 	d = ImageDraw.Draw(out)
+# 	d.multiline_text((10,10), str(string), font=unicode_font, fill=(0, 0, 0))
+# 	out.show()
 
 # Settings for API ================================================================
 clanTag = ''
@@ -121,9 +132,15 @@ def makeListOfDict_battleLog(list_playerLog):
 		dict_game_new['time'] = dp.isoparse(game.get('battleTime')).astimezone(pytz.timezone('Asia/Singapore')).strftime("%d/%m %H:%M")
 		dict_game_new['mode'] = game['gameMode'].get('name')
 		dict_game_new['score'] = str(game['team'][0].get('crowns')) + '-' + str(game['opponent'][0].get('crowns'))
+		dict_game_new['name'] = game['opponent'][0].get('name')
+		if game.get('type') == 'boatBattle':
+			if game['team'][0].get('startingTrophies') == None:
+				dict_game_new['attacker'] = 'no'
+			else:
+				dict_game_new['attacker'] = 'yes'
 		if game['opponent'][0].get('clan') != None:
 			dict_game_new['clan'] = game['opponent'][0]['clan'].get('name')
-		dict_game_new['name'] = game['opponent'][0].get('name')
+		
 		listOfGames.append(dict_game_new)
 	return listOfGames
 
@@ -229,10 +246,14 @@ def formatString_listOfDict(listOfDict, keysToCall):
 	freeSpace = 3 # this is the additional spaces allocated for each key for string formatting
 	# This loop is to set up the header and append spaces allocated for each key into dict_sizes
 	for key in keysToCall:
-		max_value_size = max([len(str(e[key])) for e in listOfDict if key in e.keys()]) # get size of largest value
-		if max_value_size < len(key): # if size of largest value in dictionary is shorter than key then use key instead
+		try:
+			max_value_size = max([len(str(e[key])) for e in listOfDict if key in e.keys()]) # get size of largest value
+			if max_value_size < len(key): # if size of largest value in dictionary is shorter than key then use key instead
+				max_value_size = len(key)
+			dict_sizes[key] = max_value_size + freeSpace
+		except ValueError:
 			max_value_size = len(key)
-		dict_sizes[key] = max_value_size + freeSpace
+			dict_sizes[key] = max_value_size + freeSpace
 		response += '{v:<{size}}'.format(v=key.title(), size=dict_sizes[key])
 
 	response += '\n{:-<{size}}\n'.format('', size=len(response))
@@ -327,6 +348,7 @@ def riverRaceLeaderboard(keysToCall):
 
 		# Print block
 		print(formatString_listOfDict(list_riverRace, keysToCall))
+		# textToImg(formatString_listOfDict(list_riverRace, keysToCall))
 		e = input("<Enter> to refresh. 'e' to return to menu. Otherwise:\n{}Your Choice: ".format(string_sortMsg))
 		
 		# Check if user wants to return to menu
@@ -365,10 +387,15 @@ def playerLog(keysToCall):
 	while True:
 		print(formatString_listOfDict(clan, ['tag', 'name',]))
 		try:
-			choice = int(input("<Enter> to return to menu. Else, enter player choice: "))
+			while True:
+				choice = int(input("<Enter> to return to menu. Else, enter player choice: "))
+				if choice <= len(clan) and choice >= 1:
+					break
+				else:
+					print(f'Clan only has {len(clan)} members.')
 		except ValueError:
 			print('Non-integer type values detected. Quitting.')
-			break
+			return
 		player = clan[choice-1]
 		playerTag = player['tag'][1:]
 		print('Accessing player log for {}...'.format(player['name']))
@@ -409,7 +436,7 @@ def main():
 						|lvl | fame | rp | fame+rp |'''
 	keysToCall_mD = ['lastSeen',
 					 'lvl',
-					 'tag',
+					 # 'tag',
 					 'trophy',
 					 'donate', 
 					 #'received', 
@@ -430,10 +457,11 @@ def main():
 					 'name']
 	
 	keysToCall_rRI = ['fame+rp', 'name']
-	keysToCall_pL = 	['type',
-						'mode',
-						'time',
-						'score',
+	keysToCall_pL = 	['time',
+						#'mode',
+						'type',
+						#'score',
+						'attacker',
 						'name',
 						'clan',]
 	# =================================================================================
@@ -515,5 +543,15 @@ def main():
 			else:
 				print('Invalid. Try again.')
 
+# text = print(json.dumps(retrieve_playerLog('8RLURC2LG')[0], indent=2))
+# # create an image
+# out = Image.new("RGB", (1000, 1000), (255, 255, 255))
+# # get a font
+# fnt = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
+# # get a drawing context
+# d = ImageDraw.Draw(out)
+# # draw multiline text
+# d.multiline_text((10,10), text, fill=(0, 0, 0))
+# out.show()
+
 main()
-# print(json.dumps(retrieve_playerLog('8RLURC2LG')[0], indent=2))
