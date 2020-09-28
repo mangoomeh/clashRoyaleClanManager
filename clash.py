@@ -397,7 +397,7 @@ def playerLog(keysToCall, clanTag):
 	# Initialize variables
 	e = ''
 	stored_e = ''
-	clan = makeListOfdict_cLB(retrieve_clanData(clanTag)[0], retrieve_currentRiverRace()[0])
+	clan = makeListOfdict_cLB(retrieve_clanData(clanTag)[0], retrieve_currentRiverRace(clanTag)[0])
 	# This block generates sort message
 	string_sortMsg = ''
 	for i in range(len(keysToCall)):
