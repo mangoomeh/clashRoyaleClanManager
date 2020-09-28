@@ -4,10 +4,6 @@ import dateutil.parser as dp
 import datetime
 import pytz
 import math
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
-import ast
 
 # def textToImg(string):
 # 	unicode_font = ImageFont.truetype("DejaVuSans.ttf", 10)
