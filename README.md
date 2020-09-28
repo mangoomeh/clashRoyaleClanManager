@@ -1,24 +1,9 @@
-# Clan Management
+# Clan Manager v1.0
 
+## Available Functions
+1. Check Clan Members Data
+2. Check River Race Leaderboard
+3. Check River Race Clans' Pariticipants
 
-
-
-## Spontane Clan Grading
-
-### Performance 
-
-Membership: 	30 donates | 500 fame
-
-Elder: 		300 donates | 2500 fame
-
-Coleader: 	900 donates | 5000 fame
-
-
-### Managerial
-
-Membership: recruitment | decided by comittee
-
-Elder: 		300 donates | 2500 fame | recruitment | jr. management
-
-Coleader:	600 donates | 3000 fame | recruitment | full management | decided by committee
-© 2020 GitHub, Inc.
+## Additional Information
+1. Interface allows to sort data by (trophies, arena, name, tag, etc.)
