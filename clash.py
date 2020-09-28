@@ -5,13 +5,6 @@ import datetime
 import pytz
 import math
 
-# def textToImg(string):
-# 	unicode_font = ImageFont.truetype("DejaVuSans.ttf", 10)
-# 	out = Image.new("RGB", (1000, 1500), (255, 255, 255))
-# 	d = ImageDraw.Draw(out)
-# 	d.multiline_text((10,10), str(string), font=unicode_font, fill=(0, 0, 0))
-# 	out.show()
-
 # Settings for API ================================================================
 clanTag = ''
 key = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6Ijc2YWYzMGJmLWFjYzgtNGE0Ny1hZmU2LWIwZjE0NzY2ZWNlYyIsImlhdCI6MTU5MjMxMzY0OSwic3ViIjoiZGV2ZWxvcGVyL2JjNzVkYTRmLTEyMGItOWU3Ny0xMTA0LWM0YmQxMDllMDc5OCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxMjguMTI4LjEyOC4xMjgiXSwidHlwZSI6ImNsaWVudCJ9XX0.czFtTMv7pqaziRUiivFYyXdvwAvPQNpI7w9tNvrExj0cvzYFl20GHtdLL3LiVKM-ZUFs1wTXeSqfjXgygssT2g'
@@ -538,16 +531,5 @@ def main():
 			
 			else:
 				print('Invalid. Try again.')
-
-# text = print(json.dumps(retrieve_playerLog('8RLURC2LG')[0], indent=2))
-# # create an image
-# out = Image.new("RGB", (1000, 1000), (255, 255, 255))
-# # get a font
-# fnt = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
-# # get a drawing context
-# d = ImageDraw.Draw(out)
-# # draw multiline text
-# d.multiline_text((10,10), text, fill=(0, 0, 0))
-# out.show()
 
 main()
