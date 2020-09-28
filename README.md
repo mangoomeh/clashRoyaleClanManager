@@ -2,7 +2,8 @@
 
 ## How to Use
 1. Download Zip
-2. Run clash.py using either a python interpreter or using command prompt
+2. Extract files
+3. Run clash.py using either a python interpreter or using command prompt: python clash.py
 
 ## Available Functions
 1. Check Clan Leaderboard (Clan's Members contributions)
@@ -12,3 +13,5 @@
 
 ## Additional Information
 1. Interface allows to sort data by (trophies, arena, name, tag, etc.)
+2. Uses SQLite3 to store clan information
+3. Currently unable to delete clan from menu
