@@ -1,3 +1,4 @@
+import sqlite3
 import requests
 import json
 import dateutil.parser as dp
@@ -5,14 +6,26 @@ import datetime
 import pytz
 import math
 
-# Settings for API ================================================================
-clanTag = ''
+# ================================================================================
+# Settings for API
+# ================================================================================
 key = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6Ijc2YWYzMGJmLWFjYzgtNGE0Ny1hZmU2LWIwZjE0NzY2ZWNlYyIsImlhdCI6MTU5MjMxMzY0OSwic3ViIjoiZGV2ZWxvcGVyL2JjNzVkYTRmLTEyMGItOWU3Ny0xMTA0LWM0YmQxMDllMDc5OCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxMjguMTI4LjEyOC4xMjgiXSwidHlwZSI6ImNsaWVudCJ9XX0.czFtTMv7pqaziRUiivFYyXdvwAvPQNpI7w9tNvrExj0cvzYFl20GHtdLL3LiVKM-ZUFs1wTXeSqfjXgygssT2g'
 base_url = "https://proxy.royaleapi.dev/v1"
 header = {"Authorization": "Bearer %s" %key}
-# =================================================================================
 
-def retrieve_clanData():
+# ================================================================================
+# RETRIEVE FUNCTIONS
+# ================================================================================
+def retrieve_clanOnly(clanTag):
+	'''This block of code retrieves clan members data and return it as
+	a dictionary.'''
+	endp = f"/clans/%23{clanTag}"
+	json_clanData = requests.get(base_url+endp, headers=header)
+	dict_clanData = json_clanData.json()
+	reqcode = json_clanData.status_code
+	return dict_clanData, reqcode
+
+def retrieve_clanData(clanTag):
 	'''This block of code retrieves clan members data and return it as
 	a dictionary.'''
 	endp = f"/clans/%23{clanTag}/members"
@@ -21,7 +34,7 @@ def retrieve_clanData():
 	reqcode = json_clanData.status_code
 	return dict_clanData, reqcode
 
-def retrieve_currentRiverRace():
+def retrieve_currentRiverRace(clanTag):
 	'''This block of code retrieves river race data and return it as
 	a dictionary.'''
 	endp = f"/clans/%23{clanTag}/currentriverrace"
@@ -39,6 +52,9 @@ def retrieve_playerLog(playerTag):
 	reqcode = json_playerLogData.status_code
 	return dict_playerLogData, reqcode
 
+# =================================================================================
+# NEW ITERABLE DATA CREATION
+# ================================================================================
 def makeListOfdict_cLB(dict_clanData, dict_riverRaceData):
 	'''This block of code takes in raw dictionary of clan members and
 	river race data and convert it to a list. This list contains consolidated
@@ -133,6 +149,9 @@ def makeListOfDict_battleLog(list_playerLog):
 		listOfGames.append(dict_game_new)
 	return listOfGames
 
+# ================================================================================
+# ITERABLE EDITTING
+# ================================================================================
 def sortListOfDict(listOfDict, keyToSortBy):
 	'''This block of code sorts a dictionary by key specified to sort by.'''
 	
@@ -224,6 +243,8 @@ def rbgReview(list_membersData):
 					break
 	return list_membersData
 
+# ================================================================================
+
 def formatString_listOfDict(listOfDict, keysToCall):
 	'''This block of code takes in a list of dictionaries object and
 	a list of string objects which are keys to be called to become
@@ -258,10 +279,13 @@ def formatString_listOfDict(listOfDict, keysToCall):
 		response += '{:>3}| {}\n'.format(str(i+1), string_temp)
 	return response
 
-def getCLBdata():
+# ================================================================================
+# INTERFACES
+# ================================================================================
+def getCLBdata(clanTag):
 	# Retrieve Data
-	dict_clanData = retrieve_clanData()[0]
-	dict_riverRaceData = retrieve_currentRiverRace()[0]
+	dict_clanData = retrieve_clanData(clanTag)[0]
+	dict_riverRaceData = retrieve_currentRiverRace(clanTag)[0]
 	memberCount = len(dict_clanData['items'])
 	clanFame = dict_riverRaceData['clan'].get('fame')
 
@@ -275,7 +299,7 @@ def getCLBdata():
 	dReview(list_membersData)
 	return list_membersData, memberCount, clanFame
 
-def clanLeaderboard(keysToCall):
+def clanLeaderboard(keysToCall, clanTag):
 	# Initialize variables
 	e = ''
 	stored_e = ''
@@ -288,7 +312,7 @@ def clanLeaderboard(keysToCall):
 	# This block is the interface
 	while True:
 		# Get clan data
-		list_membersData, memberCount, clanFame = getCLBdata()
+		list_membersData, memberCount, clanFame = getCLBdata(clanTag)
 		
 		# Check for sort
 		if e in [str(i) for i in range(1,len(keysToCall)+1)]:
@@ -307,12 +331,12 @@ def clanLeaderboard(keysToCall):
 		if e.lower() == 'e':
 			break
 
-def getRRLB():
+def getRRLB(clanTag):
 	'''KEY(S) ADDED: 	fame, rp, trophy, tag, name'''
-	list_riverRace = makeListOfdict_rRLB(retrieve_currentRiverRace()[0])
+	list_riverRace = makeListOfdict_rRLB(retrieve_currentRiverRace(clanTag)[0])
 	return list_riverRace
 
-def riverRaceLeaderboard(keysToCall):
+def riverRaceLeaderboard(keysToCall, clanTag):
 	# Initialize variables
 	e = ''
 	stored_e = ''
@@ -325,7 +349,7 @@ def riverRaceLeaderboard(keysToCall):
 	# This block is the interface
 	while True:
 		# Get Data
-		list_riverRace = getRRLB()
+		list_riverRace = getRRLB(clanTag)
 
 		# This block checks if sort is needed and sort if needed
 		if e in [str(i) for i in range(1,len(keysToCall)+1)]:
@@ -344,12 +368,12 @@ def riverRaceLeaderboard(keysToCall):
 		if e.lower() == 'e':
 			break
 
-def riverRaceClanMembers(keysToCall):
+def riverRaceClanMembers(keysToCall, clanTag):
 
 	# This block is the interface
 	while True:
 		#Retrieve Data
-		dict_riverRaceData = retrieve_currentRiverRace()[0]
+		dict_riverRaceData = retrieve_currentRiverRace(clanTag)[0]
 		listOfClans = makeListOfClans_rR(dict_riverRaceData)
 
 		for clan in listOfClans:
@@ -363,11 +387,11 @@ def riverRaceClanMembers(keysToCall):
 		if e.lower() == 'e':
 			break
 
-def playerLog(keysToCall):
+def playerLog(keysToCall, clanTag):
 	# Initialize variables
 	e = ''
 	stored_e = ''
-	clan = makeListOfdict_cLB(retrieve_clanData()[0], retrieve_currentRiverRace()[0])
+	clan = makeListOfdict_cLB(retrieve_clanData(clanTag)[0], retrieve_currentRiverRace()[0])
 	# This block generates sort message
 	string_sortMsg = ''
 	for i in range(len(keysToCall)):
@@ -407,129 +431,130 @@ def printAvailableKeys(listOfDict):
 	for i in range(len(list_keys)):
 		print(f'{i+1}. {list_keys[i]}')
 
-def fameCalculator():
-	totalLvl = 0
-	print('\nThis is a fame calculator.')
-	for i in range(8):
-		e = int(input(f"Enter {i+1}'s card level: "))
-		totalLvl += e
-	e = int(input('Number of games: '))
-	print(f'\nIf lose all battles: {totalLvl*e}')
-	print(f'If win all battles: {totalLvl*2*e}\n')
+
+def clanManagerMenu():
+    # SQLITE ==================================
+    conn = sqlite3.connect('clanTags.db')
+    c = conn.cursor()
+    try:
+        c.execute("""CREATE TABLE clanTags (tag)""")
+    except sqlite3.OperationalError:
+        pass
+    # =========================================
+    
+    # INTERFACE ===============================
+    while True:
+        c.execute('SELECT * FROM clanTags')
+        clanTagList = c.fetchall()
+        noOfTags = len(clanTagList)
+        inputText = '\nClan Manager\n' + '---------------\n'
+        for i in range(noOfTags):
+            dict_clanData, reqcode = retrieve_clanOnly(clanTagList[i][0])
+            inputText += '{}. {}\n'.format(i+1, dict_clanData.get('name'))
+        try:
+            choice = int(input(inputText + '{}. ADD NEW CLAN \n0. GO BACK\n'.format(noOfTags+1) + 'Your Choice: '))
+            for i in range(len(clanTagList)):
+                if choice == i+1:
+                    clanManager(clanTagList[i][0])
+            if choice == len(clanTagList)+1:
+                newClanTag = input('Insert clan tag: #')
+                reqcode = retrieve_clanOnly(newClanTag)[1]
+                if reqcode == 200:
+                    c.execute("INSERT INTO clanTags(tag) VALUES(?)", [newClanTag])
+                    conn.commit()
+                else:
+                    print(f'Invalid. Error code: {reqcode}\n')
+            elif choice == 0:
+                return
+        except ValueError:
+            print('Invalid Choice. Try again.\n')
+
+def clanManager(clanTag):
+	while True:
+		keysToCall_mD = [	'lastSeen',
+							'lvl',
+							# 'tag',
+							'trophy',
+							'donate', 
+							#'received', 
+							#'arena', 
+							'fame', 
+							'rp', 
+							'fame+rp', 
+							'rank']
+		# keysToCall_mD.extend(['ag', 'dg', 'rrg', 'ovg']) # CWG REVIEW 
+		# keysToCall_mD.extend(['review(bool)']) # RB REVIEW
+		# keysToCall_mD.extend(['review']) # 30 donates only review
+		keysToCall_mD.extend(['name'])
+
+		keysToCall_rR = [	'fame',
+							'rp',
+							'trophy',
+							'tag',
+							'name']
+
+		keysToCall_rRI = ['fame+rp', 'name']
+		keysToCall_pL = [	'time',
+							#'mode',
+							'type',
+							#'score',
+							'attacker',
+							'name',
+							'clan',]
+	# =================================================================================
+		option = input(
+		'\nClash Royale Leaderboards/Tools:\n'
+		'  1. Clan Leaderboard\n'
+		'  2. River Race Leaderboard\n'
+		'  3. River Race Clans Leaderboard\n'
+		'  4. Check Battle Log\n'
+		'  0. Return to Main Menu\n'
+		'Maintenance Purpose:\n'
+		'  5. Print raw clan data dictionary\n'
+		'  6. Print raw river race data dictionary\n'
+		'  7. Print available keys for CLB\n'
+		'  8. Print available keys for RRLB\n'
+		'Your Choice: '
+		)
+
+		if option == '1':
+			clanLeaderboard(keysToCall_mD, clanTag)
+		elif option == '2':
+			riverRaceLeaderboard(keysToCall_rR, clanTag)
+		elif option == '3':
+			riverRaceClanMembers(keysToCall_rRI, clanTag)
+		elif option == '4':
+			playerLog(keysToCall_pL, clanTag)
+		elif option == '5':
+			print(retrieve_clanData(clanTag)[0])
+		elif option == '6':
+			print(retrieve_currentRiverRace(clanTag)[0])
+		elif option == '7':
+			printAvailableKeys(getCLBdata(clanTag)[0])
+		elif option == '8':
+			printAvailableKeys(getRRLB(clanTag))
+		elif option == '0':
+			break
+
+		else:
+			print('Invalid. Try again.')
 
 def main():
-	global clanTag
-	global playerTag
-	# Settings for table ==============================================================
-	'''Available keys: 	| tag | name | rank | lastSeen | arena | trophy | donate | received |
-						|lvl | fame | rp | fame+rp |'''
-	keysToCall_mD = ['lastSeen',
-					 'lvl',
-					 # 'tag',
-					 'trophy',
-					 'donate', 
-					 #'received', 
-					 #'arena', 
-					 'fame', 
-					 'rp', 
-					 'fame+rp', 
-					 'rank']
-	#keysToCall_mD.extend(['ag', 'dg', 'rrg', 'ovg']) # CWG REVIEW 
-	keysToCall_mD.extend(['review(bool)']) # RB REVIEW
-	#keysToCall_mD.extend(['review']) # 30 donates only review
-	keysToCall_mD.extend(['name'])
-	
-	keysToCall_rR = ['fame',
-					 'rp',
-					 'trophy',
-					 'tag',
-					 'name']
-	
-	keysToCall_rRI = ['fame+rp', 'name']
-	keysToCall_pL = 	['time',
-						#'mode',
-						'type',
-						#'score',
-						'attacker',
-						'name',
-						'clan',]
-	# =================================================================================
-
-	# Menu Interface
 	while True:
-		while True:
-			choice = input('\nClan Manager v1\n'
-						   '--------------------\n'
-						   '1. Spontane Main Clan\n'
-						   '2. Spontane Xp1\n'
-						   '3. Manual Clantag\n'
-						   '0. Exit\n'
-						   'Your Choice: ')
-			if choice == '1':
-				clanTag = 'L2208GR9'
-				reqcode = retrieve_clanData()[1]
-				if reqcode == 200:
-					break
-				else:
-					print(f'Error {reqcode}. Data cannot be retrieved.')
-			elif choice == '2':
-				clanTag = 'YPQ8CQ0R'
-				reqcode = retrieve_clanData()[1]
-				if reqcode == 200:
-					break
-				else:
-					print(f'Error {reqcode}. Data cannot be retrieved.')
-			elif choice == '3':
-				clanTag = input('Input clan tag: #')
-				reqcode = retrieve_clanData()[1]
-				if reqcode == 200:
-					break
-				else:
-					print(f'Error {reqcode}. Data cannot be retrieved.')
-			elif choice == '0':
-				exit()
-			else:
-				print('Invalid Choice. Try again.')
-
-		while True:
-			option = input(
-				'\nClash Royale Leaderboards/Tools:\n'
-				'  1. Clan Leaderboard\n'
-				'  2. River Race Leaderboard\n'
-				'  3. River Race Clans Leaderboard\n'
-				'  4. Fame calculator\n'
-				'  9. Check Battle Log\n'
-				'  0. Return to Main Menu\n'
-				'Maintenance Purpose:\n'
-				'  5. Print raw clan data dictionary\n'
-				'  6. Print raw river race data dictionary\n'
-				'  7. Print available keys for CLB\n'
-				'  8. Print available keys for RRLB\n'
-				'Your Choice: '
-				)
-			
-			if option == '1':
-				clanLeaderboard(keysToCall_mD)
-			elif option == '2':
-				riverRaceLeaderboard(keysToCall_rR)
-			elif option == '3':
-				riverRaceClanMembers(keysToCall_rRI)
-			elif option == '4':
-				fameCalculator()
-			elif option == '5':
-				print(retrieve_clanData()[0])
-			elif option == '6':
-				print(retrieve_currentRiverRace()[0])
-			elif option == '7':
-				printAvailableKeys(getCLBdata()[0])
-			elif option == '8':
-				printAvailableKeys(getRRLB())
-			elif option == '9':
-				playerLog(keysToCall_pL)
-			elif option == '0':
-				break
-			
-			else:
-				print('Invalid. Try again.')
+		choice = input('\nCR Manager v1.0\n'
+		'----------------\n'
+		'1. Clan Manager\n'
+		'2. Player Manager\n'
+		'0. Exit\n'
+		'Your choice: '
+		)
+		if choice == '1':
+			clanManagerMenu()
+		elif choice == '2':
+			playerManagerMenu()
+		elif choice == '0':
+			exit()
+		else:
+			print('Invalid choice. Try again.\n')
 
 main()
