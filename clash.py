@@ -367,7 +367,6 @@ def riverRaceLeaderboard(keysToCall, clanTag):
 
 		# Print block
 		print(formatString_listOfDict(list_riverRace, keysToCall))
-		# textToImg(formatString_listOfDict(list_riverRace, keysToCall))
 		e = input("<Enter> to refresh. 'e' to return to menu. Otherwise:\n{}Your Choice: ".format(string_sortMsg))
 		
 		# Check if user wants to return to menu
@@ -443,7 +442,10 @@ def clanManagerMenu():
     conn = sqlite3.connect('clanTags.db')
     c = conn.cursor()
     try:
-        c.execute("""CREATE TABLE clanTags (tag)""")
+        c.execute("""CREATE TABLE clanTags (
+        							tag text, 
+        							name text
+        							)""")
     except sqlite3.OperationalError:
         pass
     # =========================================
@@ -455,8 +457,7 @@ def clanManagerMenu():
         noOfTags = len(clanTagList)
         inputText = '\nClan Manager\n' + '---------------\n'
         for i in range(noOfTags):
-            dict_clanData, reqcode = retrieve_clanOnly(clanTagList[i][0])
-            inputText += '{}. {}\n'.format(i+1, dict_clanData.get('name'))
+            inputText += '{}. {}\n'.format(i+1, clanTagList[i][1])
         try:
             choice = int(input(inputText + '{}. ADD NEW CLAN \n0. GO BACK\n'.format(noOfTags+1) + 'Your Choice: '))
             for i in range(len(clanTagList)):
@@ -464,13 +465,14 @@ def clanManagerMenu():
                     clanManager(clanTagList[i][0])
             if choice == len(clanTagList)+1:
                 newClanTag = input('Insert clan tag: #')
-                reqcode = retrieve_clanOnly(newClanTag)[1]
+                dict_clanData, reqcode = retrieve_clanOnly(newClanTag)
                 if reqcode == 200:
-                    c.execute("INSERT INTO clanTags(tag) VALUES(?)", [newClanTag])
+                    c.execute("INSERT INTO clanTags VALUES(?,?)", [newClanTag, dict_clanData.get('name')])
                     conn.commit()
                 else:
                     print(f'Invalid. Error code: {reqcode}\n')
             elif choice == 0:
+                conn.close()
                 return
         except ValueError:
             print('Invalid Choice. Try again.\n')
@@ -547,7 +549,8 @@ def clanManager(clanTag):
 
 def main():
 	while True:
-		choice = input('\nCR Manager v1.0\n'
+		choice = input(
+		'\nCR Manager v1.0\n'
 		'----------------\n'
 		'1. Clan Manager\n'
 		'2. Player Manager\n'
