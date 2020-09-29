@@ -528,17 +528,17 @@ def clanManager(clanTag):
 							'clan',]
 	# =================================================================================
 		option = input(
-		'\nClash Royale Leaderboards/Tools:\n'
+		'\nLeaderboards/Tools:\n'
 		'  1. Clan Leaderboard\n'
 		'  2. River Race Leaderboard\n'
 		'  3. River Race Clans Leaderboard\n'
 		'  4. Check Battle Log\n'
 		'  0. Return to Main Menu\n'
-		'Maintenance Purpose:\n'
-		'  5. Print raw clan data dictionary\n'
-		'  6. Print raw river race data dictionary\n'
-		'  7. Print available keys for CLB\n'
-		'  8. Print available keys for RRLB\n'
+		# 'Maintenance Purpose:\n'
+		# '  5. Print raw clan data dictionary\n'
+		# '  6. Print raw river race data dictionary\n'
+		# '  7. Print available keys for CLB\n'
+		# '  8. Print available keys for RRLB\n'
 		'Your Choice: '
 		)
 
