@@ -22,6 +22,12 @@ header = {"Authorization": "Bearer %s" %key}
 # ================================================================================
 # RETRIEVE FUNCTIONS
 # ================================================================================
+def search_clans(string):
+	endp = f"/clans"
+	payload = {'name':string}
+	json_searchData = requests.get(base_url+endp, headers=header, params=payload)
+	return json_searchData.json()
+
 def retrieve_clanOnly(clanTag):
 	'''This block of code retrieves clan members data and return it as
 	a dictionary.'''
@@ -459,7 +465,7 @@ def clanManagerMenu():
         for i in range(noOfTags):
             inputText += '{}. {}\n'.format(i+1, clanTagList[i][1])
         try:
-            choice = int(input(inputText + '{}. ADD NEW CLAN \n0. GO BACK\n'.format(noOfTags+1) + 'Your Choice: '))
+            choice = int(input(inputText + '{}. ADD NEW CLAN BY TAG \n{}. ADD NEW CLAN BY SEARCH \n0. GO BACK\n'.format(noOfTags+1, noOfTags+2) + 'Your Choice: '))
             for i in range(len(clanTagList)):
                 if choice == i+1:
                     clanManager(clanTagList[i][0])
@@ -471,6 +477,17 @@ def clanManagerMenu():
                     conn.commit()
                 else:
                     print(f'Invalid. Error code: {reqcode}\n')
+            elif choice == len(clanTagList)+2:
+            	query = input('Search by clan name: ')
+            	query = search_clans(query)
+            	query = query.get('items')
+            	for i in range(len(query)):
+            		print('{}. {:10} {}'.format(i+1, query[i]['tag'], query[i]['name']))
+            	choice = int(input('Which clan: '))
+            	for i in range(len(query)):
+            		if i+1 == choice:
+            			c.execute("INSERT INTO clanTags VALUES(?,?)", [query[i]['tag'][1:], query[i]['name']])
+            			conn.commit()
             elif choice == 0:
                 conn.close()
                 return
@@ -542,7 +559,7 @@ def clanManager(clanTag):
 		elif option == '8':
 			printAvailableKeys(getRRLB(clanTag))
 		elif option == '0':
-			break
+			return
 
 		else:
 			print('Invalid. Try again.')
@@ -567,3 +584,4 @@ def main():
 			print('Invalid choice. Try again.\n')
 
 main()
+
