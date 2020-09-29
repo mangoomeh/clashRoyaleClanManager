@@ -3,7 +3,7 @@
 ## How to Use
 1. Download Zip
 2. Extract files
-3. Run clash.py using either a python interpreter or using command prompt: python clash.py
+3. Run clash.py using either a python interpreter (Thonny, PyCharm, etc.) or using command prompt: python clash.py
 
 ## Available Functions
 1. Check Clan Leaderboard (Clan's Members contributions)
