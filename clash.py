@@ -7,74 +7,41 @@ import pytz
 import math
 
 # ================================================================================
-# Settings for API
-# ================================================================================
-key = (	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi'
-		'03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2'
-		'FtZWFwaSIsImp0aSI6Ijc2YWYzMGJmLWFjYzgtNGE0Ny1hZmU2LWIwZjE0NzY2ZWNlYyIsImlhdCI'
-		'6MTU5MjMxMzY0OSwic3ViIjoiZGV2ZWxvcGVyL2JjNzVkYTRmLTEyMGItOWU3Ny0xMTA0LWM0YmQx'
-		'MDllMDc5OCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL'
-		'3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxMjguMTI4LjEyOC4xMjgiXS'
-		'widHlwZSI6ImNsaWVudCJ9XX0.czFtTMv7pqaziRUiivFYyXdvwAvPQNpI7w9tNvrExj0cvzYFl20'
-		'GHtdLL3LiVKM-ZUFs1wTXeSqfjXgygssT2g')
-base_url = "https://proxy.royaleapi.dev/v1"
-header = {"Authorization": "Bearer %s" %key}
-# ================================================================================
 # RETRIEVE FUNCTIONS
 # ================================================================================
-def search_clans(string):
-	endp = f"/clans"
-	payload = {'name':string}
-	json_searchData = requests.get(base_url+endp, headers=header, params=payload)
-	return json_searchData.json()
-
-def retrieve_clanOnly(clanTag):
-	'''This block of code retrieves clan members data and return it as
-	a dictionary.'''
-	endp = f"/clans/%23{clanTag}"
-	json_clanData = requests.get(base_url+endp, headers=header)
-	dict_clanData = json_clanData.json()
-	reqcode = json_clanData.status_code
-	return dict_clanData, reqcode
-
-def retrieve_clanData(clanTag):
-	'''This block of code retrieves clan members data and return it as
-	a dictionary.'''
-	endp = f"/clans/%23{clanTag}/members"
-	json_clanData = requests.get(base_url+endp, headers=header)
-	dict_clanData = json_clanData.json()
-	reqcode = json_clanData.status_code
-	return dict_clanData, reqcode
-
-def retrieve_currentRiverRace(clanTag):
-	'''This block of code retrieves river race data and return it as
-	a dictionary.'''
-	endp = f"/clans/%23{clanTag}/currentriverrace"
-	json_riverRaceData = requests.get(base_url+endp, headers=header)
-	dict_riverRaceData = json_riverRaceData.json()
-	reqcode = json_riverRaceData.status_code
-	return dict_riverRaceData, reqcode
-
-def retrieve_playerLog(playerTag):
-	'''This block of code retrieves player battle log data and return it as
-	a dictionary.'''
-	endp = f"/players/%23{playerTag}/battlelog"
-	json_playerLogData = requests.get(base_url+endp, headers=header)
-	dict_playerLogData = json_playerLogData.json()
-	reqcode = json_playerLogData.status_code
-	return dict_playerLogData, reqcode
+def api_req(endpoint, **kwargs):
+	'''
+	Accepts endpoint, (params)
+	Returns dictionary object and status code
+	'''
+	endp = {
+			"clansearch" 	: "/clans",
+			"clan" 			: "/clans/%23{}".format(kwargs.get('clantag', None)),
+			"clanmembers" 	: "/clans/%23{}/members".format(kwargs.get('clantag', None)),
+			"riverrace" 	: "/clans/%23{}/currentriverrace".format(kwargs.get('clantag', None)),
+			"playerlog" 	: "/players/%23{}/battlelog".format(kwargs.get('playertag', None))
+	}
+	key = (	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi'
+			'03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2'
+			'FtZWFwaSIsImp0aSI6Ijc2YWYzMGJmLWFjYzgtNGE0Ny1hZmU2LWIwZjE0NzY2ZWNlYyIsImlhdCI'
+			'6MTU5MjMxMzY0OSwic3ViIjoiZGV2ZWxvcGVyL2JjNzVkYTRmLTEyMGItOWU3Ny0xMTA0LWM0YmQx'
+			'MDllMDc5OCIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL'
+			'3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyIxMjguMTI4LjEyOC4xMjgiXS'
+			'widHlwZSI6ImNsaWVudCJ9XX0.czFtTMv7pqaziRUiivFYyXdvwAvPQNpI7w9tNvrExj0cvzYFl20'
+			'GHtdLL3LiVKM-ZUFs1wTXeSqfjXgygssT2g')
+	base_url = "https://proxy.royaleapi.dev/v1"
+	header = {"Authorization": "Bearer %s" %key}
+	req = requests.get(base_url+endp.get(f'{endpoint}'), headers=header, params=kwargs.get('params', None))
+	return req.json(), req.status_code
 
 # =================================================================================
 # NEW ITERABLE DATA CREATION
 # ================================================================================
-def makeListOfdict_cLB(dict_clanData, dict_riverRaceData):
-	'''This block of code takes in raw dictionary of clan members and
-	river race data and convert it to a list. This list contains consolidated
-	members data in a dictionary object. This list is returned.'''
-	
-	'''KEY(S) ADDED TO CLAN DATA: 	tag, name, rank, lastSeen, arena, trophy, donate,
-									received, lvl, fame, rp, fame+rp'''
-	# Structure: [{},{},{}]
+def makeListOfdict_cLB(clanTag):
+	dict_clanData, reqcode = api_req(endpoint='clanmembers', clantag=clanTag)
+	dict_riverRaceData, reqcode = api_req(endpoint='riverrace', clantag=clanTag)
+	memberCount = len(dict_clanData['items'])
+	clanFame = dict_riverRaceData['clan'].get('fame')
 	list_membersData = [] # new list to store new dictionaries
 	for dict_m in dict_clanData['items']:
 		dict_m_new = {}
@@ -97,14 +64,15 @@ def makeListOfdict_cLB(dict_clanData, dict_riverRaceData):
 				dict_m_new['fame+rp'] 	= dict_participant.get('fame') + dict_participant.get('repairPoints')
 				break
 		list_membersData.append(dict_m_new)
-	return list_membersData
+	return list_membersData, memberCount, clanFame
 
-def makeListOfdict_rRLB(dict_riverRaceData):
+def makeListOfdict_rRLB(clanTag):
 	'''This block of code takes in raw dictionary of river race data
 	and convert it to a list. This list is returned.'''
 	
 	'''KEY(S) ADDED TO RIVERRACE DATA: tag, name, fame, rp, trophy'''
 	# Structure: [{},{},{}]
+	dict_riverRaceData, reqcode = api_req(endpoint='riverrace', clantag=clanTag)
 	list_riverRace = [] # new list to store new dictionaries
 	for dict_clan in dict_riverRaceData['clans']:
 		dict_clan_new = {}
@@ -117,13 +85,14 @@ def makeListOfdict_rRLB(dict_riverRaceData):
 		list_riverRace.append(dict_clan_new)
 	return list_riverRace
 
-def makeListOfClans_rR(dict_riverRaceData):
+def makeListOfClans_rR(clanTag):
 	'''This block of code takes in raw dictionary of river race data
 	and convert it to a list of dictionaries containing only info about
 	clans and their war participants. This list is returned.'''
 
 	'''KEYS(S) ADDED TO RIVERRACE INDIVIDUAL'S DATA: name, fame+rp'''
 	 # Structure: [[{},{}], [{},{}]]
+	dict_riverRaceData, reqcode = api_req(endpoint='riverrace', clantag=clanTag)
 	listOfClans = []
 	for dict_clan in dict_riverRaceData['clans']:
 		listOfMembers = []
@@ -136,12 +105,13 @@ def makeListOfClans_rR(dict_riverRaceData):
 		listOfClans.append(listOfMembers)
 	return listOfClans
 
-def makeListOfDict_battleLog(list_playerLog):
+def makeListOfDict_battleLog(playerTag):
 	'''This block of code takes in raw dictionary of player log data
 	and convert it to a list. This list is returned.'''
 	
 	'''KEY(S) ADDED TO battleLog DATA: type, mode, clan, name'''
 	# Structure: [{},{},{}]
+	list_playerLog = api_req(endpoint='playerlog', playertag=playerTag)
 	listOfGames = []
 	for game in list_playerLog:
 		dict_game_new = {}
@@ -172,90 +142,6 @@ def sortListOfDict(listOfDict, keyToSortBy):
 	list_sorted = sorted(list_hasKey, key=lambda i: i.get(keyToSortBy), reverse=True) # sort descending
 	list_sorted.extend(list_nonKey) # add back dict that does not contain the key at the end
 	return list_sorted
-
-# Review Rubric 30 donates
-def dReview(list_membersData):
-	for dict_m in list_membersData:
-		if dict_m['donate'] >= 30:
-			dict_m['review'] = 'pass'
-		else:
-			dict_m['review'] = 'fail'
-	return list_membersData
-
-# Review Rubric CWG
-def cwgReview(list_membersData):
-	# KEY(S) ADDED: 'ag', 'dg', 'rrg', 'ovg'
-	arenaGrade = {('Arena 7', 'Arena 8'):1,
-				  ('Arena 9', 'Arena 10'):2,
-				  ('Arena 11', 'Arena 12'):3,
-				  ('Legendary Arena', 'Challenger II'):4,
-				  ('Challenger III', 'Master I'):5,
-				  ('Master II', 'Master III'):6,
-				  ('Ultimate Champion', 'Royal Champion', 'Grand Champion', 'Champion'):7}
-	donateGrade = {900:7, 600:6, 400:5, 250:4, 120:3, 50:2, 10:1}
-	rrGrade = {3000:7, 2400:6, 1800:5, 1200:4, 800:3, 400:2, 100:1}
-
-	for dict_m in list_membersData:
-		for k, v in arenaGrade.items():
-			if dict_m['arena'] in k:
-				dict_m['ag'] = v
-				break
-			else:
-				dict_m['ag'] = 0
-		for k, v in donateGrade.items():
-			if dict_m['donate'] >= k:
-				dict_m['dg'] = v
-				break
-			else:
-				dict_m['dg'] = 0
-		for k, v in rrGrade.items():
-			if dict_m.get('fame+rp') == None:
-				dict_m['rrg'] = 0
-				break
-			elif dict_m['fame+rp'] >= k:
-				dict_m['rrg'] = v
-				break
-			else:
-				dict_m['rrg'] = 0
-		dict_m['ovg'] = math.floor((dict_m['ag'] + dict_m['dg'] + dict_m['rrg'])/3)
-	return list_membersData
-
-# Review Rubric RBG
-def rbgReview(list_membersData):
-	# KEY(S) ADDED: 'review(bool)'
-	
-	# Rubric Settings ===================================
-	rubric = {
-			  'c'	: {'d':900, 'f':5000},		# d = donate, f = fame+rp
-			  'e'	: {'d':300, 'f':2500},
-			  'm'	: {'d':30, 'f':500}		  
-			  }
-	
-	review = {
-			  'Coleader': {'m':'demote(m)', 	'e':'demote(e)', 	'c':'retain'},
-			  'Elder'	: {'m':'demote(m)', 	'e':'retain', 		'c':'promote(co)'},
-			  'Member'	: {'m':'retain', 		'e':'promote(e)', 	'c':'promote(co)'}
-			  }
-	# ===================================================
-	
-	for dict_m in list_membersData:
-		d = dict_m.get('donate')
-		f = dict_m.get('fame+rp')
-		r = dict_m.get('rank')
-		for krb, vrb in rubric.items():
-			if d < rubric['m']['d'] or f < rubric['m']['f']:
-				dict_m['review(bool)'] = 'fail'
-				break
-			elif d >= vrb['d'] and f >= vrb['f']:
-				if r in review.keys():
-					dict_m['review(bool)'] = review[r][krb]
-					break
-				else:
-					dict_m['review(bool)'] = krb
-					break
-	return list_membersData
-
-# ================================================================================
 
 def formatString_listOfDict(listOfDict, keysToCall):
 	'''This block of code takes in a list of dictionaries object and
@@ -294,28 +180,12 @@ def formatString_listOfDict(listOfDict, keysToCall):
 # ================================================================================
 # INTERFACES
 # ================================================================================
-def getCLBdata(clanTag):
-	# Retrieve Data
-	dict_clanData = retrieve_clanData(clanTag)[0]
-	dict_riverRaceData = retrieve_currentRiverRace(clanTag)[0]
-	memberCount = len(dict_clanData['items'])
-	clanFame = dict_riverRaceData['clan'].get('fame')
-
-	'''KEY(S) ADDED: 	tag, name, rank, lastSeen, arena, trophy, donate,
-						received, lvl, fame, rp, fame+rp'''
-	list_membersData = makeListOfdict_cLB(dict_clanData, dict_riverRaceData)
-	
-	# KEY(S) ADDED: 'ag', 'dg', 'rrg', 'ovg', 'review(bool)', 'review'
-	cwgReview(list_membersData)
-	rbgReview(list_membersData)
-	dReview(list_membersData)
-	return list_membersData, memberCount, clanFame
-
-def clanLeaderboard(keysToCall, clanTag):
+def clanLeaderboard(clanTag):
 	# Initialize variables
 	e = ''
 	stored_e = ''
-
+	keysToCall = ['lastSeen', 'lvl', 'trophy', 'arena', 'received', 'fame', 'fame+rp', 'rank', 'tag', 'name']
+	
 	# This block generates sort message
 	string_sortMsg = ''
 	for i in range(len(keysToCall)):
@@ -324,7 +194,7 @@ def clanLeaderboard(keysToCall, clanTag):
 	# This block is the interface
 	while True:
 		# Get clan data
-		list_membersData, memberCount, clanFame = getCLBdata(clanTag)
+		list_membersData, memberCount, clanFame = makeListOfdict_cLB(clanTag)
 		
 		# Check for sort
 		if e in [str(i) for i in range(1,len(keysToCall)+1)]:
@@ -336,78 +206,57 @@ def clanLeaderboard(keysToCall, clanTag):
 				break
 
 		# Print block
-		print('\nMembers: {}/50'.format(memberCount))
-		print('Fame: {}/50000'.format(clanFame))
+		print('\nMembers: {}'.format(memberCount))
+		print('Fame: {}'.format(clanFame))
 		print(formatString_listOfDict(list_membersData, keysToCall))
 		e = input(f"<Enter> to refresh. 'e' to return to menu. Otherwise:\n{string_sortMsg}Your Choice: ")
 		if e.lower() == 'e':
 			break
 
-def getRRLB(clanTag):
-	'''KEY(S) ADDED: 	fame, rp, trophy, tag, name'''
-	list_riverRace = makeListOfdict_rRLB(retrieve_currentRiverRace(clanTag)[0])
-	return list_riverRace
-
-def riverRaceLeaderboard(keysToCall, clanTag):
+def riverRaceLeaderboard(clanTag):
 	# Initialize variables
-	e = ''
-	stored_e = ''
-
-	# This block generates sort message
-	string_sortMsg = ''
-	for i in range(len(keysToCall)):
-		string_sortMsg += '{}. Sort by {}\n'.format(i+1, keysToCall[i].title())
+	keysToCall = ['fame', 'rp', 'trophy', 'tag', 'name']
 
 	# This block is the interface
 	while True:
-		# Get Data
-		list_riverRace = getRRLB(clanTag)
-
-		# This block checks if sort is needed and sort if needed
-		if e in [str(i) for i in range(1,len(keysToCall)+1)]:
-			stored_e = e
-		for i in range(len(keysToCall)):
-			if stored_e == str(i+1):
-				list_riverRace = sortListOfDict(list_riverRace, keysToCall[i])
-				break
-
-		# Print block
+		# Initialize
+		clanListMessage = ''
+		
+		# Data retrieval
+		list_riverRace = makeListOfdict_rRLB(clanTag)
+		list_riverRace = sortListOfDict(list_riverRace, 'fame')
+		
+		# Print
+		for i in range(len(list_riverRace)):
+			clanListMessage += '{}. {}\n'.format(i+1, list_riverRace[i].get('name'))
 		print(formatString_listOfDict(list_riverRace, keysToCall))
-		e = input("<Enter> to refresh. 'e' to return to menu. Otherwise:\n{}Your Choice: ".format(string_sortMsg))
-		
-		# Check if user wants to return to menu
+		e = input(
+			"<Enter> to refresh. 'e' to return to menu. Otherwise:"
+			f"View clan in detail:\n{clanListMessage}Your Choice: "
+			)
 		if e.lower() == 'e':
 			break
+		try:
+			e = int(e)
+			if e in range(1,5):
+				clanLeaderboard(list_riverRace[e].get('tag')[1:])
+				return
+		except ValueError:
+			pass
 
-def riverRaceClanMembers(keysToCall, clanTag):
-
-	# This block is the interface
-	while True:
-		#Retrieve Data
-		dict_riverRaceData = retrieve_currentRiverRace(clanTag)[0]
-		listOfClans = makeListOfClans_rR(dict_riverRaceData)
-
-		for clan in listOfClans:
-			clan = sortListOfDict(clan, 'fame+rp')
-			print('\nClan: {}'.format(clan[0].get('clan')), formatString_listOfDict(clan, keysToCall))
-
-		# Print block
-		e = input("<Enter> to refresh. 'e' to return to menu.")
-		
-		# Check if user wants to return to menu
-		if e.lower() == 'e':
-			break
-
-def playerLog(keysToCall, clanTag):
+def playerLog(clanTag):
 	# Initialize variables
 	e = ''
 	stored_e = ''
-	clan = makeListOfdict_cLB(retrieve_clanData(clanTag)[0], retrieve_currentRiverRace(clanTag)[0])
+	clan = makeListOfdict_cLB(clanTag)[0]
+	keysToCall = ['time', 'mode', 'type' 'score', 'attacker', 'name', 'clan',]
+	
 	# This block generates sort message
 	string_sortMsg = ''
 	for i in range(len(keysToCall)):
 		string_sortMsg += '{}. Sort by {}\n'.format(i+1, keysToCall[i].title())
 
+	# Interface
 	while True:
 		print(formatString_listOfDict(clan, ['tag', 'name',]))
 		try:
@@ -424,23 +273,13 @@ def playerLog(keysToCall, clanTag):
 		playerTag = player['tag'][1:]
 		print('Accessing player log for {}...'.format(player['name']))
 		while True:
-			list_playerLog = retrieve_playerLog(playerTag)[0]
-			listOfGames = makeListOfDict_battleLog(list_playerLog)
-			# Print block
+			listOfGames = makeListOfDict_battleLog(playerTag)
 			print(formatString_listOfDict(listOfGames, keysToCall))
 			e = input("<Enter> to refresh. 'e' to return to player choice. Otherwise:\n{}Your Choice: ".format(string_sortMsg))
 			
 			# Check if user wants to return to menu
 			if e.lower() == 'e':
 				break
-
-def printAvailableKeys(listOfDict):
-	list_keys = []
-	for member in listOfDict:
-		list_keys.extend([key for key in member.keys() if key not in list_keys])
-	print('Available Keys:')
-	for i in range(len(list_keys)):
-		print(f'{i+1}. {list_keys[i]}')
 
 
 def clanManagerMenu():
@@ -463,23 +302,35 @@ def clanManagerMenu():
         noOfTags = len(clanTagList)
         inputText = '\nClan Manager\n' + '---------------\n'
         for i in range(noOfTags):
-            inputText += '{}. {}\n'.format(i+1, clanTagList[i][1])
+            inputText += ' {}. {}\n'.format(i+1, clanTagList[i][1])
         try:
-            choice = int(input(inputText + '{}. ADD NEW CLAN BY TAG \n{}. ADD NEW CLAN BY SEARCH \n0. GO BACK\n'.format(noOfTags+1, noOfTags+2) + 'Your Choice: '))
+            choice = int(input(inputText + (
+            								' {}. ADD NEW CLAN BY TAG\n'
+            								' {}. ADD NEW CLAN BY SEARCH\n'
+            								' {}. UPDATE RECORD\n'
+            								' {}. DELETE RECORD\n'
+            								' 0. GO BACK\n'
+            								'Your Choice: '
+            								).format(
+            								noOfTags+1,
+            								noOfTags+2,
+            								noOfTags+3,
+            								noOfTags+4
+            								)))
             for i in range(len(clanTagList)):
                 if choice == i+1:
                     clanManager(clanTagList[i][0])
             if choice == len(clanTagList)+1:
                 newClanTag = input('Insert clan tag: #')
-                dict_clanData, reqcode = retrieve_clanOnly(newClanTag)
+                dict_clanData, reqcode = api_req(endpoint='clan', clantag=newClanTag)
                 if reqcode == 200:
-                    c.execute("INSERT INTO clanTags VALUES(?,?)", [newClanTag, dict_clanData.get('name')])
+                    c.execute("INSERT INTO clanTags VALUES(newClanTag,dict_clanData.get('name'))")
                     conn.commit()
                 else:
                     print(f'Invalid. Error code: {reqcode}\n')
             elif choice == len(clanTagList)+2:
             	query = input('Search by clan name: ')
-            	query = search_clans(query)
+            	query, reqcode = api_req(endpoint='clansearch', params={'name':f'{query}'})
             	query = query.get('items')
             	for i in range(len(query)):
             		print('{}. {:10} {}'.format(i+1, query[i]['tag'], query[i]['name']))
@@ -496,68 +347,23 @@ def clanManagerMenu():
 
 def clanManager(clanTag):
 	while True:
-		keysToCall_mD = [	'lastSeen',
-							'lvl',
-							# 'tag',
-							'trophy',
-							'donate', 
-							#'received', 
-							#'arena', 
-							'fame', 
-							'rp', 
-							'fame+rp', 
-							'rank']
-		# keysToCall_mD.extend(['ag', 'dg', 'rrg', 'ovg']) # CWG REVIEW 
-		# keysToCall_mD.extend(['review(bool)']) # RB REVIEW
-		# keysToCall_mD.extend(['review']) # 30 donates only review
-		keysToCall_mD.extend(['name'])
-
-		keysToCall_rR = [	'fame',
-							'rp',
-							'trophy',
-							'tag',
-							'name']
-
-		keysToCall_rRI = ['fame+rp', 'name']
-		keysToCall_pL = [	'time',
-							#'mode',
-							'type',
-							#'score',
-							'attacker',
-							'name',
-							'clan',]
 	# =================================================================================
 		option = input(
-		'\nLeaderboards/Tools:\n'
-		'  1. Clan Leaderboard\n'
-		'  2. River Race Leaderboard\n'
-		'  3. River Race Clans Leaderboard\n'
-		'  4. Check Battle Log\n'
-		'  0. Return to Main Menu\n'
-		# 'Maintenance Purpose:\n'
-		# '  5. Print raw clan data dictionary\n'
-		# '  6. Print raw river race data dictionary\n'
-		# '  7. Print available keys for CLB\n'
-		# '  8. Print available keys for RRLB\n'
+		'\nLeaderboards/Logs:\n'
+		'------------------------\n'
+		' 1. Clan Leaderboard\n'
+		' 2. River Race Leaderboard\n'
+		' 3. Check Battle Log\n'
+		' 0. Return to Main Menu\n'
 		'Your Choice: '
 		)
 
 		if option == '1':
-			clanLeaderboard(keysToCall_mD, clanTag)
+			clanLeaderboard(clanTag)
 		elif option == '2':
-			riverRaceLeaderboard(keysToCall_rR, clanTag)
+			riverRaceLeaderboard(clanTag)
 		elif option == '3':
-			riverRaceClanMembers(keysToCall_rRI, clanTag)
-		elif option == '4':
-			playerLog(keysToCall_pL, clanTag)
-		elif option == '5':
-			print(retrieve_clanData(clanTag)[0])
-		elif option == '6':
-			print(retrieve_currentRiverRace(clanTag)[0])
-		elif option == '7':
-			printAvailableKeys(getCLBdata(clanTag)[0])
-		elif option == '8':
-			printAvailableKeys(getRRLB(clanTag))
+			playerLog(clanTag)
 		elif option == '0':
 			return
 
@@ -569,9 +375,9 @@ def main():
 		choice = input(
 		'\nCR Manager v1.0\n'
 		'----------------\n'
-		'1. Clan Manager\n'
-		'2. Player Manager\n'
-		'0. Exit\n'
+		' 1. Clan Manager\n'
+		' 2. Player Manager\n'
+		' 0. Exit\n'
 		'Your choice: '
 		)
 		if choice == '1':
@@ -584,4 +390,3 @@ def main():
 			print('Invalid choice. Try again.\n')
 
 main()
-
