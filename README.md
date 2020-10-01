@@ -8,10 +8,9 @@
 ## Available Functions
 1. Check Clan Leaderboard (Clan's Members contributions)
 2. Check River Race Leaderboard (Fame of Clans in River Race)
-3. Check River Race Clans' Participants
-4. Check Clan Members Battle Log
+3. Check Clan Members Battle Log
 
 ## Additional Information
 1. Interface allows to sort data by (trophies, arena, name, tag, etc.)
 2. Uses SQLite3 to store clan information
-3. Currently unable to delete clan from menu
+3. Currently unable to delete clan from menu (will be made available in v1.1)
