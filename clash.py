@@ -184,7 +184,18 @@ def clanLeaderboard(clanTag):
 	# Initialize variables
 	e = ''
 	stored_e = ''
-	keysToCall = ['lastSeen', 'lvl', 'trophy', 'arena', 'received', 'fame', 'fame+rp', 'rank', 'tag', 'name']
+	keysToCall = [	'lastSeen', 
+					'lvl', 
+					'trophy', 
+					# 'arena', 
+					'donate', 
+					'received', 
+					# 'fame', 
+					# 'rp', 
+					'fame+rp', 
+					'rank', 
+					# 'tag', 
+					'name']
 	
 	# This block generates sort message
 	string_sortMsg = ''
@@ -215,7 +226,11 @@ def clanLeaderboard(clanTag):
 
 def riverRaceLeaderboard(clanTag):
 	# Initialize variables
-	keysToCall = ['fame', 'rp', 'trophy', 'tag', 'name']
+	keysToCall = [	'fame', 
+					'rp', 
+					'trophy', 
+					'tag', 
+					'name',]
 
 	# This block is the interface
 	while True:
@@ -239,7 +254,7 @@ def riverRaceLeaderboard(clanTag):
 		try:
 			e = int(e)
 			if e in range(1,5):
-				clanLeaderboard(list_riverRace[e].get('tag')[1:])
+				clanLeaderboard(list_riverRace[e-1].get('tag')[1:])
 				return
 		except ValueError:
 			pass
@@ -249,7 +264,13 @@ def playerLog(clanTag):
 	e = ''
 	stored_e = ''
 	clan = makeListOfdict_cLB(clanTag)[0]
-	keysToCall = ['time', 'mode', 'type' 'score', 'attacker', 'name', 'clan',]
+	keysToCall = [	'time', 
+					'mode', 
+					'type' 
+					'score', 
+					'attacker', 
+					'name', 
+					'clan',]
 	
 	# This block generates sort message
 	string_sortMsg = ''
