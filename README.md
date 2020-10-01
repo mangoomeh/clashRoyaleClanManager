@@ -13,4 +13,4 @@
 ## Additional Information
 1. Interface allows to sort data by (trophies, arena, name, tag, etc.)
 2. Uses SQLite3 to store clan information
-3. Currently unable to delete clan from menu
+3. Currently unable to delete clan from menu (will be made available in v1.1)
